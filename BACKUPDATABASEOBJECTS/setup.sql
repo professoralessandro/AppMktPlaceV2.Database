@@ -2448,7 +2448,7 @@ GO
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2021
 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	ALTER PROCEDURE [log].[LogsPaginated]
+	CREATE PROCEDURE [log].[LogsPaginated]
 		@Param VARCHAR(MAX),
 		@DateAdded DATETIME,
 		@PageNumber INT,
@@ -2471,13 +2471,13 @@ GO
 				,[DateAdded]
 			FROM 		[log].[Logs]
 			WHERE 
-					(CONVERT(VARCHAR(50), [LogId]) = CONVERT(VARCHAR(50), @Param)			OR		@Param IS NULL)
-			OR 		([Message] LIKE '%'+@Param+'%'											OR		@Param IS NULL)
-			OR 		([Method] LIKE '%'+@Param+'%'											OR		@Param IS NULL)
-			OR 		([Request] LIKE '%'+@Param+'%'											OR		@Param IS NULL)
-			OR 		(CONVERT(VARCHAR(50), [Response]) = CONVERT(VARCHAR(50), @Param)		OR		@Param IS NULL)
-			OR 		(CONVERT(VARCHAR(50), [UserAddedId]) = CONVERT(VARCHAR(50), @Param)		OR		@Param IS NULL)
-			AND		([DateAdded] >= @DateAdded												OR		@DateAdded IS NULL)
+					(LOWER(CONVERT(VARCHAR(50), [LogId])) = LOWER(CONVERT(VARCHAR(50), @Param))			OR		@Param IS NULL)
+			OR 		(LOWER([Message])	LIKE	'%'	+LOWER(@Param)+'%'									OR		@Param IS NULL)
+			OR 		(LOWER([Method])	LIKE	'%'	+LOWER(@Param)+'%'									OR		@Param IS NULL)
+			OR 		(LOWER([Request])	LIKE	'%'	+LOWER(@Param)+'%'									OR		@Param IS NULL)
+			OR 		(LOWER(CONVERT(VARCHAR(50), [Response])) = LOWER(CONVERT(VARCHAR(50), @Param))		OR		@Param IS NULL)
+			OR 		(LOWER(CONVERT(VARCHAR(50), [UserAddedId])) = LOWER(CONVERT(VARCHAR(50), @Param))	OR		@Param IS NULL)
+			AND		([DateAdded] >= @DateAdded															OR		@DateAdded IS NULL)
 			ORDER BY	1 DESC
 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT	@RowspPage ROWS ONLY;
