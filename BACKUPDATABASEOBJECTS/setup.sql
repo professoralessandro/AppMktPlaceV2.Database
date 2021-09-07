@@ -2448,20 +2448,17 @@ GO
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2021
 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	CREATE PROCEDURE [log].[LogsPaginated]
-		@Id INT,
-		@Message VARCHAR(MAX),
-		@Method VARCHAR(10),
-		@Request VARCHAR(150),
-		@Response INT,
-		@UserId INT,
+	ALTER PROCEDURE [log].[LogsPaginated]
+		@Param VARCHAR(MAX),
 		@DateAdded DATETIME,
 		@PageNumber INT,
 		@RowspPage INT
 	AS
 		BEGIN
 			-- ATRIB TESTE PROC
-			-- SET @PageNumber = 2
+			-- SET @DateAdded = NULL
+			-- SET @Param = 'POST'
+			-- SET @PageNumber = 1
 			-- SET @RowspPage = 5
 
 			SELECT
@@ -2473,16 +2470,17 @@ GO
 				,[UserAddedId]
 				,[DateAdded]
 			FROM 		[log].[Logs]
-			WHERE 		([LogId] = @Id OR @Id IS NULL)
-			AND 		([Message] LIKE '%'+@Message+'%' OR @Message IS NULL)
-			AND 		([Method] LIKE '%'+@Method+'%' OR @Method IS NULL)
-			AND 		([Request] LIKE '%'+@Request+'%' OR @Request IS NULL)
-			AND 		([Response] = @Response OR @Response IS NULL)
-			AND 		([UserAddedId] = @UserId OR @UserId IS NULL)
-			AND 		([DateAdded] >= @DateAdded OR @DateAdded IS NULL)
-			ORDER BY 1 DESC
-			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
-			FETCH NEXT @RowspPage ROWS ONLY;
+			WHERE 
+					(CONVERT(VARCHAR(50), [LogId]) = CONVERT(VARCHAR(50), @Param)			OR		@Param IS NULL)
+			OR 		([Message] LIKE '%'+@Param+'%'											OR		@Param IS NULL)
+			OR 		([Method] LIKE '%'+@Param+'%'											OR		@Param IS NULL)
+			OR 		([Request] LIKE '%'+@Param+'%'											OR		@Param IS NULL)
+			OR 		(CONVERT(VARCHAR(50), [Response]) = CONVERT(VARCHAR(50), @Param)		OR		@Param IS NULL)
+			OR 		(CONVERT(VARCHAR(50), [UserAddedId]) = CONVERT(VARCHAR(50), @Param)		OR		@Param IS NULL)
+			AND		([DateAdded] >= @DateAdded												OR		@DateAdded IS NULL)
+			ORDER BY	1 DESC
+			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
+			FETCH NEXT	@RowspPage ROWS ONLY;
 		END
 GO
 SET ANSI_NULLS ON
