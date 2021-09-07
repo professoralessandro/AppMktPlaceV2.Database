@@ -2460,7 +2460,6 @@ GO
 			-- SET @Param = 'POST'
 			-- SET @PageNumber = 1
 			-- SET @RowspPage = 5
-
 			SELECT
 				[LogId]
 				,[Message]
