@@ -1,0 +1,31 @@
+version: "1.0"
+services:
+
+  mssqldata:
+    image: mcr.microsoft.com/mssql/server:2019-CU12-ubuntu-20.04
+    entrypoint: /bin/bash
+
+  mssql-server:
+    image: mcr.microsoft.com/mssql/server:2019-CU12-ubuntu-20.04
+    volumes:
+      - /var/opt/mssql
+      # we copy our scripts into the container
+      - ./:/usr/src/app
+    #bash will be executed from that path, our scripts folder
+    working_dir: /usr/src/app
+    #bash will be executed from that path, our scripts folder
+    command: sh -c ' chmod +X ./entrypoint.sh; ./entrypoint.sh & /opt/mssql/bin/sqlservr'
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Pa5Sw0rd2021"
+      MSSQL_PID: "Express"
+    volumes_from:
+      - mssqldata
+    hostname: mkt-sql-server
+    container_name: mkt-sql-server
+    tag: "V1"
+    restart: "always"
+    ports:
+      - "6560:6560"
+    depends_on: ['mssqldata']
+  

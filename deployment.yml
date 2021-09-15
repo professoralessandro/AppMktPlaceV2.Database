@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mkt-backend-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mkt-backend-pod
+  template:
+    metadata:
+      labels:
+        app: mkt-backend-pod
+    spec:
+      containers:
+      - name: mkt-backend-container
+        image: backend-mkt:latest
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 6550
+
+#Comand to generate deployment at kubernets
+#kubectl apply -f .\deployment.yml
+#Commant to get deployments
+#kubectl get deployments
+#kubectl get pods
