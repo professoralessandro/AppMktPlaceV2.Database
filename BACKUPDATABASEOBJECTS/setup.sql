@@ -1213,6 +1213,7 @@ IF OBJECT_ID('[dbo].[Compras]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Compras] (
   		[CompraId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[CodigoCompra] VARCHAR(20) NOT NULL,
   		[ProdutoId] INT NOT NULL,
   		[CompradorId] INT NOT NULL,
 		[FormaPagamentoId] INT NOT NULL,
