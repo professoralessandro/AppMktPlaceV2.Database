@@ -11,4 +11,4 @@ Alessandro dos Santos
 This code is released under the MIT license.
 
 ## Environment
-Development
+Production
