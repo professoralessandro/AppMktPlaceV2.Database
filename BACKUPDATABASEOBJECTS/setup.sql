@@ -1213,7 +1213,8 @@ IF OBJECT_ID('[dbo].[Compras]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Compras] (
   		[CompraId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-		[CodigoCompra] VARCHAR(20) NOT NULL,
+		[CodigoCompra] VARCHAR(20) NULL,
+		[CodigoPagamento] VARCHAR(20) NULL,
   		[ProdutoId] INT NOT NULL,
   		[CompradorId] INT NOT NULL,
 		[FormaPagamentoId] INT NOT NULL,
@@ -1225,9 +1226,10 @@ BEGIN
 		[TelefoneId] INT NOT NULL,
 		[VendedorId] INT NOT NULL,
 		[AvaliacaoId] INT NOT NULL,
-		[isPago] BIT NOT NULL,
-		[isEntregue] BIT NOT NULL,
-		[isAvaliado] BIT NOT NULL,
+		[IsPago] BIT NOT NULL,
+		[IsEntregue] BIT NOT NULL,
+		[IsAvaliado] BIT NOT NULL,
+		[Ativo] BIT NOT NULL,
 		CONSTRAINT [FK_Compras_ProdutoId] FOREIGN KEY([ProdutoId])
 		REFERENCES [dbo].[Produtos] ([ProdutoId]),
 		CONSTRAINT [FK_Compras_CompradorId] FOREIGN KEY([CompradorId])
