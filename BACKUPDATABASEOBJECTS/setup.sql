@@ -404,7 +404,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposConfiguracoes]
+-- Table [dbo].[TiposCaracteristicas]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposCaracteristicas]') IS NULL
 BEGIN
@@ -504,7 +504,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposConfiguracoes]
+-- Table [dbo].[TiposTelefones]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposTelefones]') IS NULL
 BEGIN
@@ -523,7 +523,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [dbo].[Telefones]
@@ -684,7 +683,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposParametros]
+-- Table [dbo].[TiposGarantias]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposGarantias]') IS NULL
 BEGIN
@@ -732,7 +731,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposParametros]
+-- Table [dbo].[TiposNotasFiscais]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposNotasFiscais]') IS NULL
 BEGIN
@@ -1033,7 +1032,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 -- -----------------------------------------------------
 -- Table [dbo].[TiposConfiguracoes]
 -- -----------------------------------------------------
@@ -1054,7 +1052,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [dbo].[Configuracoes]
@@ -1126,6 +1123,26 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+-- -----------------------------------------------------
+-- Table [dbo].[ParametrosConfiguracoes]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[ParametrosConfiguracoes]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[ParametrosConfiguracoes] (
+		[ParametroConfiguracaoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+  		[ConfiguracaoId] INT NOT NULL,
+		[ParametroId] INT NOT NULL,
+		CONSTRAINT [FK_ParametrosConfiguracoes_ConfiguracaoId] FOREIGN KEY([ConfiguracaoId])
+		REFERENCES [dbo].[Configuracoes] ([ConfiguracaoId]),
+		CONSTRAINT [FK_ParametrosConfiguracoes_ParametroId] FOREIGN KEY([ParametroId])
+		REFERENCES [dbo].[Parametros] ([ParametroId]),
+  	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 
 -- -----------------------------------------------------
 -- Table [dbo].[Pagamentos]
