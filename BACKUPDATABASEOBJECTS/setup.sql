@@ -824,7 +824,7 @@ BEGIN
 		[NomeEmail] VARCHAR(100) NULL,
       	[Destinatario] VARCHAR(150) NOT NULL,
       	[Assunto] VARCHAR(100) NULL,
-      	[Mensagem] VARCHAR(150) NOT NULL,
+      	[Mensagem] VARCHAR(MAX) NOT NULL,
       	[Html] BIT NOT NULL,
       	[StatusEnvio] INT NOT NULL,
       	[Tentativas] INT NOT NULL,
