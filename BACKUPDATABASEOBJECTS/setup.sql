@@ -1147,27 +1147,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[ParametrosConfiguracoes]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[ParametrosConfiguracoes]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[ParametrosConfiguracoes] (
-		[ParametroConfiguracaoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[ConfiguracaoId] INT NOT NULL,
-		[ParametroId] INT NOT NULL,
-		CONSTRAINT [FK_ParametrosConfiguracoes_ConfiguracaoId] FOREIGN KEY([ConfiguracaoId])
-		REFERENCES [dbo].[Configuracoes] ([ConfiguracaoId]),
-		CONSTRAINT [FK_ParametrosConfiguracoes_ParametroId] FOREIGN KEY([ParametroId])
-		REFERENCES [dbo].[Parametros] ([ParametroId]),
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
 -- Table [dbo].[Pagamentos]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[Pagamentos]') IS NULL
