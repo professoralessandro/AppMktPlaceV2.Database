@@ -404,7 +404,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposConfiguracoes]
+-- Table [dbo].[TiposCaracteristicas]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposCaracteristicas]') IS NULL
 BEGIN
@@ -504,7 +504,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposConfiguracoes]
+-- Table [dbo].[TiposTelefones]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposTelefones]') IS NULL
 BEGIN
@@ -523,7 +523,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [dbo].[Telefones]
@@ -684,7 +683,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposParametros]
+-- Table [dbo].[TiposGarantias]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposGarantias]') IS NULL
 BEGIN
@@ -732,7 +731,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposParametros]
+-- Table [dbo].[TiposNotasFiscais]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[TiposNotasFiscais]') IS NULL
 BEGIN
@@ -793,6 +792,27 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Table [dbo].[StatusEnvioEmails]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[StatusEnvioEmails]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[StatusEnvioEmails] (
+		[StatusEnvioEmailId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[Descricao] VARCHAR(20) NOT NULL,
+		[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] DATETIME NOT NULL,
+		[DataUltimaAlteracao] DATETIME NOT NULL,
+		[Ativo] BIT NOT NULL
+	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- Table [dbo].[Emails]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[Emails]') IS NULL
@@ -804,9 +824,9 @@ BEGIN
 		[NomeEmail] VARCHAR(100) NULL,
       	[Destinatario] VARCHAR(150) NOT NULL,
       	[Assunto] VARCHAR(100) NULL,
-      	[Mensagem] VARCHAR(150) NOT NULL,
+      	[Mensagem] VARCHAR(MAX) NOT NULL,
       	[Html] BIT NOT NULL,
-      	[Enviado] BIT NOT NULL,
+      	[StatusEnvio] INT NOT NULL,
       	[Tentativas] INT NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
@@ -816,7 +836,9 @@ BEGIN
 		CONSTRAINT [FK_Emails_UsuarioEnvioId] FOREIGN KEY([UsuarioEnvioId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
 		CONSTRAINT [FK_Emails_TipoEmailId] FOREIGN KEY([TipoEmailId])
-		REFERENCES [dbo].[TiposEmails] ([TipoEmailId])
+		REFERENCES [dbo].[TiposEmails] ([TipoEmailId]),
+		CONSTRAINT [FK_Emails_StatusEnvio] FOREIGN KEY([StatusEnvio])
+		REFERENCES [dbo].[StatusEnvioEmails] ([StatusEnvioEmailId]),
   	)
 END
 GO
@@ -1033,7 +1055,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 -- -----------------------------------------------------
 -- Table [dbo].[TiposConfiguracoes]
 -- -----------------------------------------------------
@@ -1054,7 +1075,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [dbo].[Configuracoes]
@@ -1125,7 +1145,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [dbo].[Pagamentos]
