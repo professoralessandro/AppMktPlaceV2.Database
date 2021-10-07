@@ -588,6 +588,7 @@ BEGIN
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[IsPrincipal] [bit] NOT NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Enderecos_TipoEnderecoId] FOREIGN KEY([TipoEnderecoId])
 		REFERENCES [dbo].[TiposEnderecos] ([TipoEnderecoId])
