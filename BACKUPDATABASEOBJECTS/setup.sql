@@ -653,25 +653,26 @@ BEGIN
 	CREATE TABLE [dbo].[Lancamentos] (
 		[LancamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoLancamentoId] INT NOT NULL,
-		[UsuarioId] INT NOT NULL,
 		[SituacaoId] INT NOT NULL,
-		[Referencia] VARCHAR(150) NULL,
+		[Referencia] VARCHAR(50) NOT NULL,
 		[ValorLancamento] DECIMAL(10, 2) NULL,
 		[DataMovimento] [datetime] NULL,
 		[DataBaixa] [datetime] NULL,
 		[Observacao] [varchar](max) NULL,
 		[UsuarioIdBaixa] INT NULL,
 		[LancamentoIdPai] INT NULL,
-		[NroAutorizacao] [varchar](20) NULL,
-		[NroAutenticacao] [varchar](20) NULL,
-		[NroComprovante] [varchar](20) NULL,
-		[NroPedido] [varchar](20) NULL,
 		[FormaPagamentoId] [int] NULL,
 		[QtdeParcelas] [int] NULL,
+		[NmrParcela] [int] NULL,
 		[ValorParcela] DECIMAL(10, 2) NULL,
+		[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[Ativo] [bit] NOT NULL
 		CONSTRAINT [FK_Lancamentos_TipoLancamentoId] FOREIGN KEY([TipoLancamentoId])
 		REFERENCES [dbo].[TiposLancamentos] ([TipoLancamentoId]),
-		CONSTRAINT [FK_Lancamentos_UsuarioId] FOREIGN KEY([UsuarioId])
+		CONSTRAINT [FK_Lancamentos_UsuarioInclusaoId] FOREIGN KEY([UsuarioInclusaoId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
 		CONSTRAINT [FK_Lancamentos_SituacaoId] FOREIGN KEY([SituacaoId])
 		REFERENCES [dbo].[Situacoes] ([SituacaoId])
