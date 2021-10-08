@@ -436,8 +436,9 @@ IF OBJECT_ID('[dbo].[Imagens]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Imagens] (
   		[ImagemId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-		[Imagem] VARCHAR(100) NOT NULL,
-    	[Descricao] VARCHAR(MAX) NOT NULL,
+		[Titulo] VARCHAR(50) NULL,
+		[File] VARCHAR(100) NOT NULL,
+    	[Descricao] VARCHAR(MAX) NULL,
 		[ImagemPrincipal] BIT NOT NULL,
 		[Publico] BIT NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
