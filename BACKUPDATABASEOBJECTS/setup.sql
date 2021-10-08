@@ -122,29 +122,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
--- -----------------------------------------------------
--- Table [dbo].[Reclamacoes]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[TiposMensagens]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[Reclamacoes] (
-  		[ReclamacaoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[Descricao] VARCHAR(MAX) NOT NULL,
-		[UsuarioInclusaoId] INT NOT NULL,
-		[UsuarioUltimaAlteracaoId] INT NOT NULL,
-		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
-		[Ativo] [bit] NOT NULL
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
 -- -----------------------------------------------------
 -- Table [seg].[Grupos]
 -- -----------------------------------------------------
@@ -165,7 +142,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [seg].[Usuarios]
@@ -357,9 +333,10 @@ BEGIN
 	CREATE TABLE [dbo].[Produtos] (
 		[ProdutoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoProdutoId] INT NOT NULL,
-		[Descricao] VARCHAR(150) NOT NULL,
-		[CodigoBarras] VARCHAR(50) NULL,
-		[Marca] VARCHAR(MAX) NULL,
+		[Descricao] VARCHAR(50) NOT NULL,
+		[Detalhes] VARCHAR(MAX) NOT NULL,
+		[CodigoBarras] VARCHAR(30) NULL,
+		[Marca] VARCHAR(30) NULL,
 		[Quantidade] INT NOT NULL,
 		[IsIlimitado] BIT NOT NULL,
 		[QuantidadeCritica] INT NULL,
@@ -655,15 +632,13 @@ BEGIN
 		[TipoLancamentoId] INT NOT NULL,
 		[SituacaoId] INT NOT NULL,
 		[Referencia] VARCHAR(50) NOT NULL,
-		[ValorLancamento] DECIMAL(10, 2) NULL,
-		[DataMovimento] [datetime] NULL,
+		[ValorLancamento] DECIMAL(10, 2) NOT NULL,
 		[DataBaixa] [datetime] NULL,
 		[Observacao] [varchar](max) NULL,
 		[UsuarioIdBaixa] INT NULL,
 		[LancamentoIdPai] INT NULL,
-		[FormaPagamentoId] [int] NULL,
-		[QtdeParcelas] [int] NULL,
-		[NmrParcela] [int] NULL,
+		[QtdeParcelas] [int] NOT NULL,
+		[NmrParcela] [int] NOT NULL,
 		[ValorParcela] DECIMAL(10, 2) NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
