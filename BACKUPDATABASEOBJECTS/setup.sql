@@ -59,27 +59,6 @@ GO
 -- -----------------------------------------------------
 -- Table [dbo].[TiposDocumentos]
 -- -----------------------------------------------------
-IF OBJECT_ID('[seg].[TiposUsuarios]') IS NULL
-BEGIN
-	CREATE TABLE [seg].[TiposUsuarios] (
-		[TipoUsuarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-		[Descricao] VARCHAR(50) NOT NULL,
-		[UsuarioInclusaoId] INT NOT NULL,
-		[UsuarioUltimaAlteracaoId] INT NOT NULL,
-		[DataInclusao] DATETIME NOT NULL,
-		[DataUltimaAlteracao] DATETIME NOT NULL,
-		[Ativo] BIT NOT NULL
-	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[TiposDocumentos]
--- -----------------------------------------------------
 IF OBJECT_ID('[seg].[TiposProdutos]') IS NULL
 BEGIN
 	CREATE TABLE [seg].[TiposProdutos] (
@@ -457,15 +436,15 @@ IF OBJECT_ID('[dbo].[Imagens]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Imagens] (
   		[ImagemId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-		[Path] VARCHAR(100) NOT NULL,
-    	[Descricao] VARCHAR(50) NOT NULL,
+		[Titulo] VARCHAR(50) NULL,
+		[File] VARCHAR(100) NOT NULL,
+    	[Descricao] VARCHAR(MAX) NULL,
 		[ImagemPrincipal] BIT NOT NULL,
 		[Publico] BIT NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
-		[Ativo] [bit] NOT NULL
+		[DataUltimaAlteracao] [datetime] NOT NULL
   	)
 END
 GO
@@ -474,6 +453,26 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+-- -----------------------------------------------------
+-- Table [dbo].[ConfiguracoesParametros]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[ImagensProdutos]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[ImagensProdutos] (
+		[ImagemProdutoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[ImagemId] INT NOT NULL,
+		[ProdutoId] INT NOT NULL,
+		CONSTRAINT [FK_ImagensProdutos_ImagemId] FOREIGN KEY([ImagemId])
+		REFERENCES [dbo].[Imagens] ([ImagemId]),
+		CONSTRAINT [FK_ImagensProdutos_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId])
+	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 
 -- -----------------------------------------------------
 -- Table [dbo].[Avaliacoes]
