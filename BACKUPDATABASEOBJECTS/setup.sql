@@ -653,7 +653,6 @@ BEGIN
 	CREATE TABLE [dbo].[Lancamentos] (
 		[LancamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoLancamentoId] INT NOT NULL,
-		[UsuarioId] INT NOT NULL,
 		[SituacaoId] INT NOT NULL,
 		[Referencia] VARCHAR(50) NOT NULL,
 		[ValorLancamento] DECIMAL(10, 2) NULL,
@@ -673,7 +672,7 @@ BEGIN
 		[Ativo] [bit] NOT NULL
 		CONSTRAINT [FK_Lancamentos_TipoLancamentoId] FOREIGN KEY([TipoLancamentoId])
 		REFERENCES [dbo].[TiposLancamentos] ([TipoLancamentoId]),
-		CONSTRAINT [FK_Lancamentos_UsuarioId] FOREIGN KEY([UsuarioId])
+		CONSTRAINT [FK_Lancamentos_UsuarioInclusaoId] FOREIGN KEY([UsuarioInclusaoId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
 		CONSTRAINT [FK_Lancamentos_SituacaoId] FOREIGN KEY([SituacaoId])
 		REFERENCES [dbo].[Situacoes] ([SituacaoId])
