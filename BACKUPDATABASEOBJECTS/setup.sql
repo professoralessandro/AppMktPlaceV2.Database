@@ -738,8 +738,21 @@ GO
  	CREATE TABLE [dbo].[NotasFiscais] (
    		[NotaFiscalId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoNotaFiscalId] INT NOT NULL,
+		[ChaveAcesso] VARCHAR(50) NULL,
+		[UsuarioId] INT NOT NULL,
+		[DestinatarioId] INT NOT NULL,
+		[DadosAdicionais] VARCHAR(MAX) NULL,
+		[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_NotasFiscais_TipoNotaFiscalId] FOREIGN KEY([TipoNotaFiscalId])
-		REFERENCES [dbo].[TiposNotasFiscais] ([TipoNotaFiscalId])
+		REFERENCES [dbo].[TiposNotasFiscais] ([TipoNotaFiscalId]),
+		CONSTRAINT [FK_NotasFiscais_UsuarioId] FOREIGN KEY([UsuarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
+		CONSTRAINT [FK_NotasFiscais_DestinatarioId] FOREIGN KEY([DestinatarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId])
    	)
  END
  GO
@@ -1132,6 +1145,15 @@ BEGIN
 	CREATE TABLE [dbo].[Pagamentos] (
   		[PagamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
   		[LancamentoId] INT NULL,
+		[CodigoPagamento] VARCHAR (30) NULL,
+		[ChagoExterno] VARCHAR (50) NULL,
+		[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[Ativo] [bit] NOT NULL,
+		CONSTRAINT [FK_Pagamentos_LancamentoId] FOREIGN KEY([LancamentoId])
+		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
   	)
 END
 GO
