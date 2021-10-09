@@ -1145,6 +1145,15 @@ BEGIN
 	CREATE TABLE [dbo].[Pagamentos] (
   		[PagamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
   		[LancamentoId] INT NULL,
+		[CodigoPagamento] VARCHAR (30) NULL,
+		[ChagoExterno] VARCHAR (50) NULL,
+		[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[Ativo] [bit] NOT NULL,
+		CONSTRAINT [FK_Pagamentos_LancamentoId] FOREIGN KEY([LancamentoId])
+		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
   	)
 END
 GO
