@@ -577,30 +577,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
--- -----------------------------------------------------
--- Table [dbo].[Vendas]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[Vendas]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[Vendas] (
-  		[VendaId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[UsuarioId] INT NOT NULL,
-  		[UsuarioInclusaoId] INT NOT NULL,
-		[UsuarioUltimaAlteracaoId] INT NOT NULL,
-		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
-		[Ativo] [bit] NOT NULL,
-		CONSTRAINT [FK_Vendas_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 -- -----------------------------------------------------
 -- Table [dbo].[Situacoes]
 -- -----------------------------------------------------
@@ -783,12 +759,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[StatusEnvioEmails]
+-- Table [dbo].[StatusEnvio]
 -- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[StatusEnvioEmails]') IS NULL
+IF OBJECT_ID('[dbo].[StatusEnvio]') IS NULL
 BEGIN
-	CREATE TABLE [dbo].[StatusEnvioEmails] (
-		[StatusEnvioEmailId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	CREATE TABLE [dbo].[StatusEnvio] (
+		[StatusEnvioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[Descricao] VARCHAR(20) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
@@ -829,7 +805,7 @@ BEGIN
 		CONSTRAINT [FK_Emails_TipoEmailId] FOREIGN KEY([TipoEmailId])
 		REFERENCES [dbo].[TiposEmails] ([TipoEmailId]),
 		CONSTRAINT [FK_Emails_StatusEnvio] FOREIGN KEY([StatusEnvio])
-		REFERENCES [dbo].[StatusEnvioEmails] ([StatusEnvioEmailId]),
+		REFERENCES [dbo].[StatusEnvio] ([StatusEnvioId]),
   	)
 END
 GO
@@ -1124,7 +1100,11 @@ BEGIN
 	  	[Descricao] [varchar](100) NOT NULL,
 	  	[Valor] [varchar](max) NOT NULL,
 	  	[Publico] [bit] NOT NULL,
-	  	[Ativo] [bit] NOT NULL,
+	  	[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] DATETIME NOT NULL,
+		[DataUltimaAlteracao] DATETIME NOT NULL,
+		[Ativo] BIT NOT NULL
 		CONSTRAINT [FK_Parametros_TipoParametroId] FOREIGN KEY([TipoParametroId])
 		REFERENCES [dbo].[TiposParametros] ([TipoParametroId]),
 		CONSTRAINT [FK_Parametros_TipoDadoId] FOREIGN KEY([TipoDadoId])
@@ -1144,7 +1124,7 @@ IF OBJECT_ID('[dbo].[Pagamentos]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Pagamentos] (
   		[PagamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[LancamentoId] INT NULL,
+  		[LancamentoId] INT NOT NULL,
 		[CodigoPagamento] VARCHAR (30) NULL,
 		[ChagoExterno] VARCHAR (50) NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
@@ -1176,48 +1156,6 @@ BEGIN
 		CONSTRAINT [FK_ConfiguracoesParametros_ConfiguracaoId] FOREIGN KEY([ConfiguracaoId])
 		REFERENCES [dbo].[Configuracoes] ([ConfiguracaoId])
 	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[UsuariosLancamentos]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[UsuariosLancamentos]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[UsuariosLancamentos] (
-  		[UsuarioLancamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[LancamentoId] INT NOT NULL,
-		[UsuarioId] INT NOT NULL,
-		CONSTRAINT [FK_UsuariosLancamentos_LancamentoId] FOREIGN KEY([LancamentoId])
-		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
-		CONSTRAINT [FK_UsuariosLancamentos_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[UsuariosDadosBancarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[UsuariosDadosBancarios]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[UsuariosDadosBancarios] (
-  		[UsuarioDadoBancarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[UsuarioId] INT NOT NULL,
-  		[DadoBancarioId] INT NOT NULL,
-		CONSTRAINT [FK_UsuariosDadosBancarios_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-		CONSTRAINT [FK_UsuariosDadosBancarios_DadoBancarioId] FOREIGN KEY([DadoBancarioId])
-		REFERENCES [dbo].[DadoSBancarios] ([DadoBancarioId])
-  	)
 END
 GO
 SET ANSI_NULLS ON
