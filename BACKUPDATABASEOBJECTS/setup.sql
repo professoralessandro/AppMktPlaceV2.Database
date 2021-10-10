@@ -57,11 +57,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposDocumentos]
+-- Table [dbo].[TiposProdutos]
 -- -----------------------------------------------------
-IF OBJECT_ID('[seg].[TiposProdutos]') IS NULL
+IF OBJECT_ID('[dbo].[TiposProdutos]') IS NULL
 BEGIN
-	CREATE TABLE [seg].[TiposProdutos] (
+	CREATE TABLE [dbo].[TiposProdutos] (
 		[TipoProdutoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[Descricao] VARCHAR(50) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
@@ -102,12 +102,12 @@ GO
 
 
 -- -----------------------------------------------------
--- Table [dbo].[TiposWorkFlows]
+-- Table [dbo].[TiposWorkflows]
 -- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[TiposWorkFlows]') IS NULL
+IF OBJECT_ID('[dbo].[TiposWorkflows]') IS NULL
 BEGIN
-	CREATE TABLE [dbo].[TiposWorkFlows] (
-		[TipoWorkFlowId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	CREATE TABLE [dbo].[TiposWorkflows] (
+		[TipoWorkflowId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[Descricao] VARCHAR(50) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
@@ -129,7 +129,7 @@ IF OBJECT_ID('[seg].[Grupos]') IS NULL
 BEGIN
 	CREATE TABLE [seg].[Grupos] (
 	    [GrupoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-	    [Grupo] [varchar](50) NOT NULL,
+	    [Descricao] [varchar](50) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
@@ -150,16 +150,16 @@ IF OBJECT_ID('[seg].[Usuarios]') IS NULL
 BEGIN
 	CREATE TABLE [seg].[Usuarios] (
 		[UsuarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-		[Usuario] [varchar](50) NOT NULL,
+		[GrupoUsaruiId] INT NOT NULL,
+		[Login] [varchar](50) NOT NULL,
 		[NmrDocumento] VARCHAR(50) NOT NULL,
 		[TipoDocumentoId] INT NOT NULL,
 		[Senha] [varchar](max) NOT NULL,
 		[Nome] [varchar](100) NOT NULL,
-		[DataNascimento] [datetime] NULL,
+		[DataNascimento] [datetime] NOT NULL,
 		[Sexo] [varchar](1) NULL,
 		[EstadoCivil] [varchar](2) NULL,
 		[Email] [varchar](255) NOT NULL,
-		[TrocaSenha] [bit] NOT NULL,
 		[Bloqueado] [bit] NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
@@ -169,7 +169,9 @@ BEGIN
 		[DataUltimoLogin] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Usuarios_TipoDocumentoId] FOREIGN KEY([TipoDocumentoId])
-		REFERENCES [dbo].[TiposDocumentos] ([TipoDocumentoId])
+		REFERENCES [dbo].[TiposDocumentos] ([TipoDocumentoId]),
+		CONSTRAINT [FK_Usuarios_GrupoUsaruiId] FOREIGN KEY([GrupoUsaruiId])
+		REFERENCES [seg].[Grupos] ([GrupoId])
 	)
 END
 GO
@@ -177,7 +179,6 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 -- -----------------------------------------------------
 -- Table [seg].[Recursos]
@@ -206,20 +207,19 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 -- -----------------------------------------------------
 -- Table [seg].[GruposRecursos]
 -- -----------------------------------------------------
 IF OBJECT_ID('[seg].[GruposRecursos]') IS NULL
 BEGIN
 	CREATE TABLE [seg].[GruposRecursos] (
-		[GrupoRecursoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+  		[GrupoRecursoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[GrupoId] INT NOT NULL,
 		[RecursoId] INT NOT NULL,
-		CONSTRAINT [FK_GruposRecursos_RecursoId] FOREIGN KEY([RecursoId])
-		REFERENCES [seg].[Recursos] ([RecursoId]),
 		CONSTRAINT [FK_GruposRecursos_GrupoId] FOREIGN KEY([GrupoId])
-		REFERENCES [seg].[Grupos] ([GrupoId])
+		REFERENCES [seg].[Grupos] ([GrupoId]),
+		CONSTRAINT [FK_TelefonesUsuarios_RecursoId] FOREIGN KEY([RecursoId])
+		REFERENCES [seg].[Recursos] ([RecursoId]),
   	)
 END
 GO
@@ -229,48 +229,27 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [seg].[GruposRecursos]
+-- Table [seg].[Workflows]
 -- -----------------------------------------------------
-IF OBJECT_ID('[seg].[GruposUsuarios]') IS NULL
+IF OBJECT_ID('[seg].[Workflows]') IS NULL
 BEGIN
-	CREATE TABLE [seg].[GruposUsuarios] (
-		[GrupoUsuarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-		[GrupoId] INT NOT NULL,
-		[UsuarioId] INT NOT NULL,
-		CONSTRAINT [FK_GruposUsuarios_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-		CONSTRAINT [FK_GruposUsuarios_GrupoId] FOREIGN KEY([GrupoId])
-		REFERENCES [seg].[Grupos] ([GrupoId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [seg].[WorkFlows]
--- -----------------------------------------------------
-IF OBJECT_ID('[seg].[WorkFlows]') IS NULL
-BEGIN
-	CREATE TABLE [seg].[WorkFlows] (
-	    [WorkFlowId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	CREATE TABLE [seg].[Workflows] (
+	    [WorkflowId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoWorkflowId] INT NOT NULL,
 		[StatusAprovacaoId] INT NOT NULL,
 	    [UsuarioResponsavel] INT NOT NULL,
-		[DataWorkFlow] DATETIME NOT NULL,
 		[Observacao] VARCHAR(MAX) NULL,
-		[DataWorkFlowVerificacao] DATETIME NULL,
+		[Descricao] VARCHAR(50) NULL,
+		[DataWorkflowVerificacao] DATETIME NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NOT NULL,
 		[Ativo] [bit] NOT NULL,
-		CONSTRAINT [FK_WorkFlows_StatusAprovacaoId] FOREIGN KEY([StatusAprovacaoId])
+		CONSTRAINT [FK_Workflows_StatusAprovacaoId] FOREIGN KEY([StatusAprovacaoId])
 		REFERENCES [dbo].[StatusAprovacoes] ([StatusAprovacaoId]),
-		CONSTRAINT [FK_WorkFlows_TipoWorkflowId] FOREIGN KEY([TipoWorkflowId])
-		REFERENCES [dbo].[TiposWorkFlows] ([TipoWorkflowId])
+		CONSTRAINT [FK_Workflows_TipoWorkflowId] FOREIGN KEY([TipoWorkflowId])
+		REFERENCES [dbo].[TiposWorkflows] ([TipoWorkflowId])
     )
 END
 GO
@@ -350,7 +329,7 @@ BEGIN
 		[DataUltimaAlteracao] [datetime] NOT NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Produtos_ProdutoId] FOREIGN KEY([TipoProdutoId])
-		REFERENCES [seg].[TiposProdutos] ([TipoProdutoId])
+		REFERENCES [dbo].[TiposProdutos] ([TipoProdutoId])
     )
 END
 GO
@@ -508,14 +487,36 @@ BEGIN
 	CREATE TABLE [dbo].[Telefones] (
   		[TelefoneId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     	[TipoTelefoneId] INT NOT NULL,
-		[Telefone] VARCHAR(20) NOT NULL,
+		[Numero] VARCHAR(20) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[IsPrincipal] [bit] NOT NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Telefones_TipoTelefoneId] FOREIGN KEY([TipoTelefoneId])
 		REFERENCES [dbo].[TiposTelefones] ([TipoTelefoneId])
+  	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Table [dbo].[TelefonesUsuarios]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[TelefonesUsuarios]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[TelefonesUsuarios] (
+  		[TelefoneUsuarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[TelefoneId] INT NOT NULL,
+		[UsuarioId] INT NOT NULL,
+		CONSTRAINT [FK_TelefonesUsuarios_TelefoneId] FOREIGN KEY([TelefoneId])
+		REFERENCES [dbo].[Telefones] ([TelefoneId]),
+		CONSTRAINT [FK_TelefonesUsuarios_UsuarioId] FOREIGN KEY([UsuarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
   	)
 END
 GO
@@ -577,22 +578,19 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 -- -----------------------------------------------------
--- Table [dbo].[Vendas]
+-- Table [dbo].[EnderecosUsuarios]
 -- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[Vendas]') IS NULL
+IF OBJECT_ID('[dbo].[EnderecosUsuarios]') IS NULL
 BEGIN
-	CREATE TABLE [dbo].[Vendas] (
-  		[VendaId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[UsuarioId] INT NOT NULL,
-  		[UsuarioInclusaoId] INT NOT NULL,
-		[UsuarioUltimaAlteracaoId] INT NOT NULL,
-		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
-		[Ativo] [bit] NOT NULL,
-		CONSTRAINT [FK_Vendas_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
+	CREATE TABLE [dbo].[EnderecosUsuarios] (
+  		[EnderecoUsuarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[EnderecoId] INT NOT NULL,
+		[UsuarioId] INT NOT NULL,
+		CONSTRAINT [FK_EnderecosUsuarios_EnderecoId] FOREIGN KEY([EnderecoId])
+		REFERENCES [dbo].[Enderecos] ([EnderecoId]),
+		CONSTRAINT [FK_EnderecosUsuarios_UsuarioId] FOREIGN KEY([UsuarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
   	)
 END
 GO
@@ -644,7 +642,7 @@ BEGIN
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NOT NULL,
-		[Ativo] [bit] NOT NULL
+		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Lancamentos_TipoLancamentoId] FOREIGN KEY([TipoLancamentoId])
 		REFERENCES [dbo].[TiposLancamentos] ([TipoLancamentoId]),
 		CONSTRAINT [FK_Lancamentos_UsuarioInclusaoId] FOREIGN KEY([UsuarioInclusaoId])
@@ -783,12 +781,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[StatusEnvioEmails]
+-- Table [dbo].[StatusEnvio]
 -- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[StatusEnvioEmails]') IS NULL
+IF OBJECT_ID('[dbo].[StatusEnvio]') IS NULL
 BEGIN
-	CREATE TABLE [dbo].[StatusEnvioEmails] (
-		[StatusEnvioEmailId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	CREATE TABLE [dbo].[StatusEnvio] (
+		[StatusEnvioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[Descricao] VARCHAR(20) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
@@ -829,7 +827,7 @@ BEGIN
 		CONSTRAINT [FK_Emails_TipoEmailId] FOREIGN KEY([TipoEmailId])
 		REFERENCES [dbo].[TiposEmails] ([TipoEmailId]),
 		CONSTRAINT [FK_Emails_StatusEnvio] FOREIGN KEY([StatusEnvio])
-		REFERENCES [dbo].[StatusEnvioEmails] ([StatusEnvioEmailId]),
+		REFERENCES [dbo].[StatusEnvio] ([StatusEnvioId]),
   	)
 END
 GO
@@ -1124,7 +1122,11 @@ BEGIN
 	  	[Descricao] [varchar](100) NOT NULL,
 	  	[Valor] [varchar](max) NOT NULL,
 	  	[Publico] [bit] NOT NULL,
-	  	[Ativo] [bit] NOT NULL,
+	  	[UsuarioInclusaoId] INT NOT NULL,
+		[UsuarioUltimaAlteracaoId] INT NOT NULL,
+		[DataInclusao] DATETIME NOT NULL,
+		[DataUltimaAlteracao] DATETIME NOT NULL,
+		[Ativo] BIT NOT NULL
 		CONSTRAINT [FK_Parametros_TipoParametroId] FOREIGN KEY([TipoParametroId])
 		REFERENCES [dbo].[TiposParametros] ([TipoParametroId]),
 		CONSTRAINT [FK_Parametros_TipoDadoId] FOREIGN KEY([TipoDadoId])
@@ -1144,7 +1146,7 @@ IF OBJECT_ID('[dbo].[Pagamentos]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Pagamentos] (
   		[PagamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[LancamentoId] INT NULL,
+  		[LancamentoId] INT NOT NULL,
 		[CodigoPagamento] VARCHAR (30) NULL,
 		[ChagoExterno] VARCHAR (50) NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
@@ -1176,48 +1178,6 @@ BEGIN
 		CONSTRAINT [FK_ConfiguracoesParametros_ConfiguracaoId] FOREIGN KEY([ConfiguracaoId])
 		REFERENCES [dbo].[Configuracoes] ([ConfiguracaoId])
 	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[UsuariosLancamentos]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[UsuariosLancamentos]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[UsuariosLancamentos] (
-  		[UsuarioLancamentoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[LancamentoId] INT NOT NULL,
-		[UsuarioId] INT NOT NULL,
-		CONSTRAINT [FK_UsuariosLancamentos_LancamentoId] FOREIGN KEY([LancamentoId])
-		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
-		CONSTRAINT [FK_UsuariosLancamentos_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[UsuariosDadosBancarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[UsuariosDadosBancarios]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[UsuariosDadosBancarios] (
-  		[UsuarioDadoBancarioId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-  		[UsuarioId] INT NOT NULL,
-  		[DadoBancarioId] INT NOT NULL,
-		CONSTRAINT [FK_UsuariosDadosBancarios_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-		CONSTRAINT [FK_UsuariosDadosBancarios_DadoBancarioId] FOREIGN KEY([DadoBancarioId])
-		REFERENCES [dbo].[DadoSBancarios] ([DadoBancarioId])
-  	)
 END
 GO
 SET ANSI_NULLS ON
@@ -1514,13 +1474,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Procedure [dbo].[TiposWorkFlowsPaginated]
+-- Procedure [dbo].[TiposWorkflowsPaginated]
 -- -----------------------------------------------------
 
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2021
 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	CREATE PROCEDURE [dbo].[TiposWorkFlowsPaginated]
+	CREATE PROCEDURE [dbo].[TiposWorkflowsPaginated]
 		@Id INT,
 		@Descricao VARCHAR(MAX),
 		@Ativo BIT,
@@ -1533,15 +1493,15 @@ GO
 			-- SET @RowspPage = 5
 
 			SELECT
-				[TipoWorkFlowId]
+				[TipoWorkflowId]
 				,[Descricao]
 				,[UsuarioInclusaoId]
 				,[UsuarioUltimaAlteracaoId]
 				,[DataInclusao]
 				,[DataUltimaAlteracao]
 				,[Ativo]
-			FROM 		[TiposWorkFlows]
-			WHERE 		([TipoWorkFlowId] = @Id OR @Id IS NULL)
+			FROM 		[TiposWorkflows]
+			WHERE 		([TipoWorkflowId] = @Id OR @Id IS NULL)
 			AND 		([Descricao] LIKE '%' +@Descricao+ '%' OR @Descricao IS NULL)
 			AND			([Ativo] = @Ativo OR @Ativo IS NULL)
 			ORDER BY 1 DESC
@@ -1663,7 +1623,7 @@ GO
 -- Feed table [seg].[Grupos]
 -- -----------------------------------------------------
 
-INSERT INTO [seg].[Grupos] ([Grupo], [DataInclusao], [DataUltimaAlteracao], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [Ativo])
+INSERT INTO [seg].[Grupos] ([Descricao], [DataInclusao], [DataUltimaAlteracao], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [Ativo])
 VALUES('System', GETDATE(), GETDATE(), 1, 1, 1)
 GO
 SET ANSI_NULLS ON
@@ -1675,20 +1635,8 @@ GO
 -- Feed table [seg].[Usuarios]
 -- -----------------------------------------------------
 
-INSERT INTO [seg].[Usuarios]([Usuario], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [TrocaSenha], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
-VALUES ('System', '00000000000', 1, 'SENHASECRETA', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 0, 1, 1, 1, GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Feed table [seg].[GruposUsuarios]
--- -----------------------------------------------------
-
-INSERT INTO [seg].[GruposUsuarios] ([GrupoId], [UsuarioId])
-VALUES(1, 1)
+INSERT INTO [seg].[Usuarios]([Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
+VALUES ('System', 1, '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 1, 1, 1, GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
 GO
 SET ANSI_NULLS ON
 GO
