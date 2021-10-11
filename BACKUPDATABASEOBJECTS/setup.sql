@@ -367,6 +367,7 @@ BEGIN
 	CREATE TABLE [dbo].[Caracteristicas] (
     	[CaracteristicaId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoCaracteristicaId] INT NOT NULL,
+		[ProdutoId] INT NOT NULL,
     	[Descricao] VARCHAR(MAX) NOT NULL,
     	[Ordem] INT NULL,
     	[Publico] BIT NOT NULL,
@@ -376,7 +377,9 @@ BEGIN
 		[DataUltimaAlteracao] [datetime] NOT NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Caracteristicas_TipoCaracteristicaId] FOREIGN KEY([TipoCaracteristicaId])
-		REFERENCES [dbo].[TiposCaracteristicas] ([TipoCaracteristicaId])
+		REFERENCES [dbo].[TiposCaracteristicas] ([TipoCaracteristicaId]),
+		CONSTRAINT [FK_Caracteristicas_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId]),
   	)
 END
 GO
