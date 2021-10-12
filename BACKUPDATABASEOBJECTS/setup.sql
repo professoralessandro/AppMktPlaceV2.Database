@@ -443,7 +443,7 @@ BEGIN
 		[ProdutoId] INT NOT NULL,
 		[VendedorId] INT NOT NULL,
     	[Descricao] VARCHAR(MAX) NOT NULL,
-		[Valor] DECIMAL(10, 2) NOT NULL,
+		[Valor] DECIMAL(2, 2) NOT NULL,
 		[UsuarioInclusaoId] INT NOT NULL,
 		[UsuarioUltimaAlteracaoId] INT NOT NULL,
 		[DataInclusao] [datetime] NOT NULL,
@@ -1004,6 +1004,48 @@ BEGIN
 		CONSTRAINT [FK_Bloqueios_TipoBloqueioId] FOREIGN KEY([TipoBloqueioId])
 		REFERENCES [dbo].[TiposBloqueios] ([TipoBloqueioId]),
 	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Table [dbo].[BloqueiosProdutos]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[BloqueiosProdutos]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[BloqueiosProdutos] (
+  		[AvaliacaoProdutoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[BloqueioId] INT NOT NULL,
+		[ProdutoId] INT NOT NULL,
+		CONSTRAINT [FK_BloqueiosProdutos_BloqueioId] FOREIGN KEY([BloqueioId])
+		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
+		CONSTRAINT [FK_BloqueiosProduto_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId]),
+  	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Table [dbo].[BloqueiosUsuarios]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[BloqueiosUsuarios]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[BloqueiosUsuarios] (
+  		[AvaliacaoProdutoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[BloqueioId] INT NOT NULL,
+		[UsuarioId] INT NOT NULL,
+		CONSTRAINT [FK_BloqueiosUsuarios_BloqueioId] FOREIGN KEY([BloqueioId])
+		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
+		CONSTRAINT [FK_BloqueiosUsuarios_ProdutoId] FOREIGN KEY([UsuarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId])
+  	)
 END
 GO
 SET ANSI_NULLS ON
