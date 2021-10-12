@@ -367,6 +367,7 @@ BEGIN
 	CREATE TABLE [dbo].[Caracteristicas] (
     	[CaracteristicaId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[TipoCaracteristicaId] INT NOT NULL,
+		[ProdutoId] INT NOT NULL,
     	[Descricao] VARCHAR(MAX) NOT NULL,
     	[Ordem] INT NULL,
     	[Publico] BIT NOT NULL,
@@ -376,7 +377,9 @@ BEGIN
 		[DataUltimaAlteracao] [datetime] NOT NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Caracteristicas_TipoCaracteristicaId] FOREIGN KEY([TipoCaracteristicaId])
-		REFERENCES [dbo].[TiposCaracteristicas] ([TipoCaracteristicaId])
+		REFERENCES [dbo].[TiposCaracteristicas] ([TipoCaracteristicaId]),
+		CONSTRAINT [FK_Caracteristicas_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId]),
   	)
 END
 GO
@@ -449,6 +452,48 @@ BEGIN
 		CONSTRAINT [FK_Avaliacoes_ProdutoId] FOREIGN KEY([ProdutoId])
 		REFERENCES [dbo].[Produtos] ([ProdutoId]),
 		CONSTRAINT [FK_Avaliacoes_VendedorId] FOREIGN KEY([VendedorId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
+  	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Table [dbo].[AvaliacoesProdutos]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[AvaliacoesProdutos]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[AvaliacoesProdutos] (
+  		[AvaliacaoProdutoId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[AvaliacaoId] INT NOT NULL,
+		[ProdutoId] INT NOT NULL,
+		CONSTRAINT [FK_AvaliacoesProdutos_AvaliacaoId] FOREIGN KEY([AvaliacaoId])
+		REFERENCES [dbo].[Avaliacoes] ([AvaliacaoId]),
+		CONSTRAINT [FK_AvaliacoesProdutos_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId]),
+  	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Table [dbo].[AvaliacoesVendedores]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[AvaliacoesVendedores]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[AvaliacoesVendedores] (
+  		[AvaliacaoVendedorId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		[AvaliacaoId] INT NOT NULL,
+		[VendedorId] INT NOT NULL,
+		CONSTRAINT [FK_AvaliacoesVendedores_AvaliacaoId] FOREIGN KEY([AvaliacaoId])
+		REFERENCES [dbo].[Avaliacoes] ([AvaliacaoId]),
+		CONSTRAINT [FK_AvaliacoesVendedores_VendedorId] FOREIGN KEY([VendedorId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
   	)
 END
@@ -845,7 +890,7 @@ BEGIN
 	CREATE TABLE [dbo].[Mensagens] (
   		[MensagemId] BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[RemetenteId] INT NOT NULL,
-		[Mensagem] VARCHAR(MAX) NOT NULL,
+		[MensagemContexto] VARCHAR(MAX) NOT NULL,
 		[TipoMensagemId] INT NOT NULL,
 		[IsHtml] BIT NOT NULL,
 		[DestinatarioId] INT NOT NULL,
@@ -1204,7 +1249,6 @@ BEGIN
 		[GarantiaId] INT NOT NULL,
 		[TelefoneId] INT NOT NULL,
 		[VendedorId] INT NOT NULL,
-		[AvaliacaoId] INT NOT NULL,
 		[IsPago] BIT NOT NULL,
 		[IsEntregue] BIT NOT NULL,
 		[IsAvaliado] BIT NOT NULL,
@@ -1224,9 +1268,7 @@ BEGIN
 		CONSTRAINT [FK_Compras_EnderecoId] FOREIGN KEY([EnderecoId])
 		REFERENCES [dbo].[Enderecos] ([EnderecoId]),
 		CONSTRAINT [FK_Compras_GarantiaId] FOREIGN KEY([GarantiaId])
-		REFERENCES [dbo].[Garantias] ([GarantiaId]),
-		CONSTRAINT [FK_Compras_AvaliacaoId] FOREIGN KEY([AvaliacaoId])
-		REFERENCES [dbo].[Avaliacoes] ([AvaliacaoId])
+		REFERENCES [dbo].[Garantias] ([GarantiaId])
   	)
 END
 GO
