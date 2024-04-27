@@ -44,7 +44,7 @@ BEGIN
 		[StatusAprovacaoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[Descricao] VARCHAR(50) NOT NULL,
 		[Valor] VARCHAR(50) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] DATETIME NOT NULL,
 		[DataUltimaAlteracao] DATETIME NOT NULL,
@@ -65,10 +65,10 @@ BEGIN
 	CREATE TABLE [seg].[Grupos] (
 	    [GrupoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 	    [Descricao] [varchar](50) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
     )
 END
@@ -96,16 +96,37 @@ BEGIN
 		[EstadoCivil] [varchar](2) NULL,
 		[Email] [varchar](255) NOT NULL,
 		[Bloqueado] [bit] NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[DataUltimaTrocaSenha] [datetime] NOT NULL,
 		[DataUltimoLogin] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Usuarios_GrupoUsaruiId] FOREIGN KEY([GrupoUsaruiId])
 		REFERENCES [seg].[Grupos] ([GrupoId])
 	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Table [seg].[GruposUsuarios]
+-- -----------------------------------------------------
+IF OBJECT_ID('[seg].[GruposUsuarios]') IS NULL
+BEGIN
+	CREATE TABLE [seg].[GruposUsuarios] (
+  		[GrupoRecursoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+		[GrupoId] UNIQUEIDENTIFIER,
+		[UsuarioId] UNIQUEIDENTIFIER,
+		CONSTRAINT [FK_GruposUsuarios_GrupoId] FOREIGN KEY([GrupoId])
+		REFERENCES [seg].[Grupos] ([GrupoId]),
+		CONSTRAINT [FK_GruposUsuarios_UsuarioId] FOREIGN KEY([UsuarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
+  	)
 END
 GO
 SET ANSI_NULLS ON
@@ -174,10 +195,10 @@ BEGIN
 		[Observacao] VARCHAR(MAX) NULL,
 		[Descricao] VARCHAR(50) NULL,
 		[DataWorkflowVerificacao] DATETIME NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Workflows_StatusAprovacaoId] FOREIGN KEY([StatusAprovacaoId])
 		REFERENCES [dbo].[StatusAprovacoes] ([StatusAprovacaoId])
@@ -198,10 +219,10 @@ BEGIN
 		[FormaPagamentoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[Descricao] [varchar](50) NOT NULL,
 		[PermiteParcelar] [bit] NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL
 	)
 END
@@ -221,7 +242,7 @@ IF OBJECT_ID('[dbo].[Produtos]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Produtos] (
 		[ProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[TipoProdutoId] UNIQUEIDENTIFIER,
+		[TipoProdutoId] INT,
 		[Descricao] VARCHAR(50) NOT NULL,
 		[Detalhes] VARCHAR(MAX) NOT NULL,
 		[CodigoBarras] VARCHAR(30) NULL,
@@ -232,11 +253,15 @@ BEGIN
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
 		[MargemLucro] DECIMAL(10,2) NOT NULL,
+		[Peso] INT NULL,
+		[Altura] INT NULL,
+		[Largura] INT NULL,
+		[Comprimento] INT NULL,
 		[Bloqueado] [bit] NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
-		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER NULL,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL
     )
 END
@@ -258,10 +283,10 @@ BEGIN
     	[Descricao] VARCHAR(MAX) NOT NULL,
     	[Ordem] INT NULL,
     	[Publico] BIT NOT NULL,
-    	[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+    	[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Caracteristicas_ProdutoId] FOREIGN KEY([ProdutoId])
 		REFERENCES [dbo].[Produtos] ([ProdutoId])
@@ -285,10 +310,10 @@ BEGIN
     	[Descricao] VARCHAR(MAX) NULL,
 		[ImagemPrincipal] BIT NOT NULL,
 		[Publico] BIT NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL
+		[DataUltimaAlteracao] [datetime] NULL
   	)
 END
 GO
@@ -329,10 +354,10 @@ BEGIN
 		[VendedorId] UNIQUEIDENTIFIER,
     	[Descricao] VARCHAR(MAX) NOT NULL,
 		[Valor] DECIMAL(2, 2) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Avaliacoes_ProdutoId] FOREIGN KEY([ProdutoId])
 		REFERENCES [dbo].[Produtos] ([ProdutoId]),
@@ -397,10 +422,10 @@ BEGIN
   		[TelefoneId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     	[TipoTelefoneId] UNIQUEIDENTIFIER,
 		[Numero] VARCHAR(20) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[IsPrincipal] [bit] NOT NULL,
 		[Ativo] [bit] NOT NULL
   	)
@@ -448,10 +473,10 @@ BEGIN
 		[Estado] VARCHAR(2) NOT NULL,
 		[CEP] VARCHAR(8) NOT NULL,
 		[PontoReferencia] VARCHAR(100) NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[IsPrincipal] [bit] NOT NULL,
 		[Ativo] [bit] NOT NULL
   	)
@@ -491,10 +516,10 @@ BEGIN
 	CREATE TABLE [dbo].[Situacoes] (
 		[SituacaoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[Descricao] VARCHAR(150) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL
 	)
 END
@@ -522,10 +547,10 @@ BEGIN
 		[QtdeParcelas] [int] NOT NULL,
 		[NmrParcela] [int] NOT NULL,
 		[ValorParcela] DECIMAL(10, 2) NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Lancamentos_UsuarioInclusaoId] FOREIGN KEY([UsuarioInclusaoId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
@@ -552,10 +577,10 @@ BEGIN
 		[Periodo] VARCHAR(20)  NULL,
 		[Inicio] [datetime] NULL,
 		[Fim] [datetime] NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL
   	)
 END
@@ -578,10 +603,10 @@ GO
 		[UsuarioId] UNIQUEIDENTIFIER,
 		[DestinatarioId] UNIQUEIDENTIFIER,
 		[DadosAdicionais] VARCHAR(MAX) NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_NotasFiscais_UsuarioId] FOREIGN KEY([UsuarioId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
@@ -611,10 +636,10 @@ BEGIN
       	[Html] BIT NOT NULL,
       	[StatusEnvio] INT NOT NULL,
       	[Tentativas] INT NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Emails_UsuarioEnvioId] FOREIGN KEY([UsuarioEnvioId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId])
@@ -639,10 +664,10 @@ BEGIN
 		[TipoMensagemId] UNIQUEIDENTIFIER,
 		[IsHtml] BIT NOT NULL,
 		[DestinatarioId] UNIQUEIDENTIFIER,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Mensagens_RemetenteId] FOREIGN KEY([RemetenteId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId])
@@ -669,10 +694,10 @@ BEGIN
 		[TipoDocumentoId] UNIQUEIDENTIFIER,
 		[NomeRecebedor] VARCHAR(100) NOT NULL,
 		[isEntregueTitular] BIT NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Entregas_ResponsavelEntregaId] FOREIGN KEY([ResponsavelEntregaId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId])
@@ -695,12 +720,12 @@ BEGIN
 		[ItemBloqueadoId] UNIQUEIDENTIFIER,
 		[NomeBloqueio] VARCHAR(100) NOT NULL,
 		[isBloqueiaAcesso] BIT NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInicio] [datetime] NULL,
 		[DataFim] [datetime] NULL,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL
 	)
 END
@@ -764,10 +789,10 @@ BEGIN
 		[Agencia] VARCHAR(6) NOT NULL,
 		[Conta] VARCHAR(20) NOT NULL,
 		[Tipo] VARCHAR(2) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_DadosBancarios_UsuarioId] FOREIGN KEY([UsuarioId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId])
@@ -794,10 +819,10 @@ BEGIN
 		[Validade] VARCHAR(6) NOT NULL,
 		[Tipo] VARCHAR(2) NOT NULL,
 		[CodSeg] VARCHAR(3) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_CartoesBancarios_UsuarioId] FOREIGN KEY([UsuarioId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId])
@@ -818,10 +843,10 @@ BEGIN
   		[ConfiguracaoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[TipoConfiguracaoId] UNIQUEIDENTIFIER,
 		[Descricao] VARCHAR(150) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL
   	)
 END
@@ -843,7 +868,7 @@ BEGIN
 	  	[Descricao] [varchar](100) NOT NULL,
 	  	[Valor] [varchar](max) NOT NULL,
 	  	[Publico] [bit] NOT NULL,
-	  	[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+	  	[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] DATETIME NOT NULL,
 		[DataUltimaAlteracao] DATETIME NOT NULL,
@@ -866,10 +891,10 @@ BEGIN
   		[LancamentoId] UNIQUEIDENTIFIER,
 		[CodigoPagamento] VARCHAR (30) NULL,
 		[ChagoExterno] VARCHAR (50) NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Pagamentos_LancamentoId] FOREIGN KEY([LancamentoId])
 		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
@@ -994,7 +1019,7 @@ GO
 	CREATE PROCEDURE [dbo].[ProdutosPaginated]
 		@Id UNIQUEIDENTIFIER,
 		@Descricao VARCHAR(50),
-		@TipoProduto UNIQUEIDENTIFIER,
+		@TipoProduto INT,
 		@Marca VARCHAR(30),
 		@CodigoBarras VARCHAR(30),
 		@IsBloqueado BIT,
@@ -1008,7 +1033,7 @@ GO
 			-- SET @RowspPage = 5
 
 			SELECT
-				[ProdutoId]
+				[ProdutoId]			AS	Identifier
 				,[TipoProdutoId]
 				,[Descricao]
 				,[Detalhes]
@@ -1101,7 +1126,8 @@ GO
 -- -----------------------------------------------------
 
 INSERT INTO [seg].[Grupos] ([GrupoId], [Descricao], [DataInclusao], [DataUltimaAlteracao], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [Ativo])
-VALUES('e7f8f4a0-753e-4aee-8999-340e173cbcba', 'System', GETDATE(), GETDATE(), '5b01dd84-5ddd-4885-ac18-769065a16971', '5b01dd84-5ddd-4885-ac18-769065a16971', 1)
+VALUES('59647e61-db07-4b43-993d-3f7eda18fe7f', 'System', GETDATE(), GETDATE(), '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 1),
+('cb4ba730-222c-4b05-bb56-c2fec255bd9d', 'Master', GETDATE(), GETDATE(), '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 1)
 GO
 SET ANSI_NULLS ON
 GO
@@ -1113,14 +1139,26 @@ GO
 -- -----------------------------------------------------
 
 INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
-VALUES ('5b01dd84-5ddd-4885-ac18-769065a16971', 'System', 'e7f8f4a0-753e-4aee-8999-340e173cbcba', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 1, '5b01dd84-5ddd-4885-ac18-769065a16971', '5b01dd84-5ddd-4885-ac18-769065a16971', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
+VALUES ('9a5f0c64-8103-4ee1-8acd-84b28090d898', 'System', '59647e61-db07-4b43-993d-3f7eda18fe7f', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1),
+('d2a833de-5bb4-4931-a3c2-133c8994072a', 'Master', '59647e61-db07-4b43-993d-3f7eda18fe7f', '00000000000', 1, '@M45ter', 'Master', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
 GO
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+-- -----------------------------------------------------
+-- Feed table [seg].[GruposUsuarios]
+-- -----------------------------------------------------
 
+INSERT INTO [seg].[GruposUsuarios]([GrupoRecursoId], [GrupoId], [UsuarioId])
+VALUES (NEWID(), '59647e61-db07-4b43-993d-3f7eda18fe7f', '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
+(NEWID(), 'cb4ba730-222c-4b05-bb56-c2fec255bd9d', 'd2a833de-5bb4-4931-a3c2-133c8994072a')
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 
 -- -----------------------------------------------------
 -- DROPDATABASE AREA
