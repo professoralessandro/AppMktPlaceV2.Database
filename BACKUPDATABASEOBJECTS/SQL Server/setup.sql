@@ -114,27 +114,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [seg].[GruposUsuarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[seg].[GruposUsuarios]') IS NULL
-BEGIN
-	CREATE TABLE [seg].[GruposUsuarios] (
-  		[GrupoRecursoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[GrupoId] UNIQUEIDENTIFIER,
-		[UsuarioId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_GruposUsuarios_GrupoId] FOREIGN KEY([GrupoId])
-		REFERENCES [seg].[Grupos] ([GrupoId]),
-		CONSTRAINT [FK_GruposUsuarios_UsuarioId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
 -- Table [seg].[Recursos]
 -- -----------------------------------------------------
 IF OBJECT_ID('[seg].[Recursos]') IS NULL
@@ -1140,20 +1119,7 @@ GO
 
 INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
 VALUES ('9a5f0c64-8103-4ee1-8acd-84b28090d898', 'System', '59647e61-db07-4b43-993d-3f7eda18fe7f', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1),
-('d2a833de-5bb4-4931-a3c2-133c8994072a', 'Master', '59647e61-db07-4b43-993d-3f7eda18fe7f', '00000000000', 1, '@M45ter', 'Master', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Feed table [seg].[GruposUsuarios]
--- -----------------------------------------------------
-
-INSERT INTO [seg].[GruposUsuarios]([GrupoRecursoId], [GrupoId], [UsuarioId])
-VALUES (NEWID(), '59647e61-db07-4b43-993d-3f7eda18fe7f', '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
-(NEWID(), 'cb4ba730-222c-4b05-bb56-c2fec255bd9d', 'd2a833de-5bb4-4931-a3c2-133c8994072a')
+('d2a833de-5bb4-4931-a3c2-133c8994072a', 'Master', 'cb4ba730-222c-4b05-bb56-c2fec255bd9d', '00000000000', 1, '@M45ter', 'Master', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
 GO
 SET ANSI_NULLS ON
 GO
