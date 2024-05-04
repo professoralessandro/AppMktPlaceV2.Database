@@ -231,7 +231,6 @@ BEGIN
 		[QuantidadeCritica] INT NULL,
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
-		[MargemLucro] DECIMAL(10,2) NOT NULL,
 		[Peso] INT NULL,
 		[Altura] INT NULL,
 		[Largura] INT NULL,
@@ -995,7 +994,7 @@ GO
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2021
 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	CREATE PROCEDURE [dbo].[ProdutosPaginated]
+	ALTER PROCEDURE [dbo].[ProdutosPaginated]
 		@Id UNIQUEIDENTIFIER,
 		@Descricao VARCHAR(50),
 		@TipoProduto INT,
@@ -1004,7 +1003,8 @@ GO
 		@IsBloqueado BIT,
 		@Ativo BIT,
 		@PageNumber INT,
-		@RowspPage INT
+		@RowspPage INT,
+		@UserId UNIQUEIDENTIFIER
 	AS
 		BEGIN
 			-- ATRIB TESTE PROC
@@ -1013,7 +1013,7 @@ GO
 
 			SELECT
 				[ProdutoId]			AS	Identifier
-				,[TipoProdutoId]
+				,[TipoProdutoId]	AS 	ProductTypeEnum
 				,[Descricao]
 				,[Detalhes]
 				,[CodigoBarras]
@@ -1023,7 +1023,6 @@ GO
 				,[QuantidadeCritica]
 				,[PrecoCusto]
 				,[PrecoVenda]
-				,[MargemLucro]
 				,[Bloqueado]
 				,[UsuarioInclusaoId]
 				,[UsuarioUltimaAlteracaoId]
@@ -1038,6 +1037,7 @@ GO
 			AND 		([CodigoBarras] LIKE '%' +@CodigoBarras+ '%'	OR	@CodigoBarras IS NULL)
 			AND			([Bloqueado] = @IsBloqueado OR @IsBloqueado IS NULL)
 			AND			([Ativo] = @Ativo OR @Ativo IS NULL)
+			AND			(([UsuarioInclusaoId] = @UserId OR [UsuarioUltimaAlteracaoId] = @UserId) OR @UserId IS NULL)
 			ORDER BY 1 DESC
 			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT @RowspPage ROWS ONLY;
@@ -1087,6 +1087,37 @@ GO
 			ORDER BY	1 DESC
 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT	@RowspPage ROWS ONLY;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Procedure [seg].[ReturnUsersIsASystemAdmin]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2021
+	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
+	CREATE PROCEDURE [seg].[ReturnUsersIsASystemAdmin]
+		@UserId UNIQUEIDENTIFIER
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			DECLARE @IsAdmin BIT;
+
+    		SELECT @IsAdmin = CASE 
+    		    WHEN EXISTS (
+    		        SELECT 1 FROM seg.Usuarios us
+					WHERE us.GrupoUsaruiId = (SELECT * FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
+					AND us.UsuarioId = @UserId
+    		    ) THEN 1 
+    		    ELSE 0 
+    		END;
+
+    		SELECT @IsAdmin AS IsSystemAdmin;
 		END
 GO
 SET ANSI_NULLS ON
