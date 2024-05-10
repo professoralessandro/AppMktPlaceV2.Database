@@ -231,6 +231,7 @@ BEGIN
 		[QuantidadeCritica] INT NULL,
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
+		[Score] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
 		[Peso] INT NULL,
 		[Altura] INT NULL,
 		[Largura] INT NULL,
@@ -994,7 +995,7 @@ GO
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2021
 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	ALTER PROCEDURE [dbo].[ProdutosPaginated]
+	CREATE PROCEDURE [dbo].[ProdutosPaginated]
 		@Id UNIQUEIDENTIFIER,
 		@Descricao VARCHAR(50),
 		@TipoProduto INT,
@@ -1049,6 +1050,84 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Procedure [dbo].[StoreProdutosPaginated]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 05/10/2024
+	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
+	CREATE PROCEDURE [dbo].[StoreProdutosPaginated]
+		@UserId UNIQUEIDENTIFIER,
+		@Descricao VARCHAR(50),
+		@TipoProduto INT,
+		@Marca VARCHAR(30),
+		@CodigoBarras VARCHAR(30),
+		@PageNumber INT,
+		@RowspPage INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @PageNumber = 2
+			-- SET @RowspPage = 5
+
+			SELECT
+				[ProdutoId]			AS	Identifier
+				,[TipoProdutoId]	AS 	ProductTypeEnum
+				,[Descricao]
+				,[Detalhes]
+				,[CodigoBarras]
+				,[Marca]
+				,[Quantidade]
+				,[PrecoVenda]
+			FROM [APDBDev].[dbo].[Produtos]
+			WHERE 		([ProdutoId]	=		  @UserId				OR	@UserId IS NULL)
+			AND 		([Descricao]	LIKE '%' +@Descricao+ '%'		OR	@Descricao IS NULL)
+			AND 		([TipoProdutoId] =		  @TipoProduto			OR	@TipoProduto IS NULL)
+			AND 		([Marca]		LIKE '%' +@Marca+ '%'			OR	@Marca IS NULL)
+			AND 		([CodigoBarras] LIKE '%' +@CodigoBarras+ '%'	OR	@CodigoBarras IS NULL)
+			AND			(([UsuarioInclusaoId] = @UserId OR [UsuarioUltimaAlteracaoId] = @UserId) OR @UserId IS NULL)
+			ORDER BY [Score] DESC
+			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
+			FETCH NEXT @RowspPage ROWS ONLY;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Procedure [seg].[ReturnUsersIsASystemAdmin]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2021
+	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
+	CREATE PROCEDURE [seg].[ReturnUsersIsASystemAdmin]
+		@UserId UNIQUEIDENTIFIER
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			DECLARE @IsAdmin BIT;
+
+    		SELECT @IsAdmin = CASE 
+    		    WHEN EXISTS (
+    		        SELECT 1 FROM seg.Usuarios us
+					WHERE us.GrupoUsaruiId = (SELECT * FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
+					AND us.UsuarioId = @UserId
+    		    ) THEN 1 
+    		    ELSE 0 
+    		END;
+
+    		SELECT @IsAdmin AS IsSystemAdmin;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- Procedure [log].[LogsPaginated]
 -- -----------------------------------------------------
 
@@ -1087,37 +1166,6 @@ GO
 			ORDER BY	1 DESC
 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT	@RowspPage ROWS ONLY;
-		END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Procedure [seg].[ReturnUsersIsASystemAdmin]
--- -----------------------------------------------------
-
-	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
-	-- CREATED BY ALESSANDRO 08/05/2021
-	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	CREATE PROCEDURE [seg].[ReturnUsersIsASystemAdmin]
-		@UserId UNIQUEIDENTIFIER
-	AS
-		BEGIN
-			-- ATRIB TESTE PROC
-			DECLARE @IsAdmin BIT;
-
-    		SELECT @IsAdmin = CASE 
-    		    WHEN EXISTS (
-    		        SELECT 1 FROM seg.Usuarios us
-					WHERE us.GrupoUsaruiId = (SELECT * FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
-					AND us.UsuarioId = @UserId
-    		    ) THEN 1 
-    		    ELSE 0 
-    		END;
-
-    		SELECT @IsAdmin AS IsSystemAdmin;
 		END
 GO
 SET ANSI_NULLS ON
