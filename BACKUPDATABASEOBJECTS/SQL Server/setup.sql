@@ -1039,7 +1039,7 @@ GO
 			AND			([Bloqueado] = @IsBloqueado OR @IsBloqueado IS NULL)
 			AND			([Ativo] = @Ativo OR @Ativo IS NULL)
 			AND			(([UsuarioInclusaoId] = @UserId OR [UsuarioUltimaAlteracaoId] = @UserId) OR @UserId IS NULL)
-			ORDER BY 1 DESC
+			ORDER BY [Score], [ProdutoId] DESC
 			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT @RowspPage ROWS ONLY;
 		END
@@ -1113,7 +1113,7 @@ GO
     		SELECT @IsAdmin = CASE 
     		    WHEN EXISTS (
     		        SELECT 1 FROM seg.Usuarios us
-					WHERE us.GrupoUsaruiId = (SELECT * FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
+					WHERE us.GrupoUsaruiId = (SELECT TOP 1 gp.GrupoId FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
 					AND us.UsuarioId = @UserId
     		    ) THEN 1 
     		    ELSE 0 
