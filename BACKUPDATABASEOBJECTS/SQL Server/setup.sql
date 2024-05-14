@@ -222,8 +222,9 @@ BEGIN
 	CREATE TABLE [dbo].[Produtos] (
 		[ProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[TipoProdutoId] INT,
-		[Descricao] VARCHAR(50) NOT NULL,
+		[Titulo] VARCHAR(50) NOT NULL,
 		[Detalhes] VARCHAR(MAX) NOT NULL,
+		[ResumoDetalhes] VARCHAR(200) NOT NULL,
 		[CodigoBarras] VARCHAR(30) NULL,
 		[Marca] VARCHAR(30) NULL,
 		[Quantidade] INT NOT NULL,
