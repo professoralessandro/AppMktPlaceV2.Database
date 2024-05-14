@@ -998,7 +998,7 @@ GO
 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
 	CREATE PROCEDURE [dbo].[ProdutosPaginated]
 		@Id UNIQUEIDENTIFIER,
-		@Descricao VARCHAR(50),
+		@Titulo VARCHAR(50),
 		@TipoProduto INT,
 		@Marca VARCHAR(30),
 		@CodigoBarras VARCHAR(30),
@@ -1016,7 +1016,7 @@ GO
 			SELECT
 				[ProdutoId]			AS	Identifier
 				,[TipoProdutoId]	AS 	ProductTypeEnum
-				,[Descricao]
+				,[Titulo]
 				,[Detalhes]
 				,[CodigoBarras]
 				,[Marca]
@@ -1033,7 +1033,7 @@ GO
 				,[Ativo]
 			FROM [APDBDev].[dbo].[Produtos]
 			WHERE 		([ProdutoId]	=		  @Id					OR	@Id IS NULL)
-			AND 		([Descricao]	LIKE '%' +@Descricao+ '%'		OR	@Descricao IS NULL)
+			AND 		([Titulo]		LIKE '%' +@Titulo+ '%'			OR	@Titulo IS NULL)
 			AND 		([TipoProdutoId] =		  @TipoProduto			OR	@TipoProduto IS NULL)
 			AND 		([Marca]		LIKE '%' +@Marca+ '%'			OR	@Marca IS NULL)
 			AND 		([CodigoBarras] LIKE '%' +@CodigoBarras+ '%'	OR	@CodigoBarras IS NULL)
@@ -1059,7 +1059,7 @@ GO
 	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
 	CREATE PROCEDURE [dbo].[StoreProdutosPaginated]
 		@UserId UNIQUEIDENTIFIER,
-		@Descricao VARCHAR(50),
+		@Titulo VARCHAR(50),
 		@TipoProduto INT,
 		@Marca VARCHAR(30),
 		@CodigoBarras VARCHAR(30),
@@ -1074,7 +1074,7 @@ GO
 			SELECT
 				[ProdutoId]			AS	Identifier
 				,[TipoProdutoId]	AS 	ProductTypeEnum
-				,[Descricao]
+				,[Titulo]
 				,[Detalhes]
 				,[CodigoBarras]
 				,[Marca]
@@ -1082,7 +1082,7 @@ GO
 				,[PrecoVenda]
 			FROM [APDBDev].[dbo].[Produtos]
 			WHERE 		([ProdutoId]	=		  @UserId				OR	@UserId IS NULL)
-			AND 		([Descricao]	LIKE '%' +@Descricao+ '%'		OR	@Descricao IS NULL)
+			AND 		([Titulo]		LIKE '%' +@Titulo+ '%'			OR	@Titulo IS NULL)
 			AND 		([TipoProdutoId] =		  @TipoProduto			OR	@TipoProduto IS NULL)
 			AND 		([Marca]		LIKE '%' +@Marca+ '%'			OR	@Marca IS NULL)
 			AND 		([CodigoBarras] LIKE '%' +@CodigoBarras+ '%'	OR	@CodigoBarras IS NULL)
