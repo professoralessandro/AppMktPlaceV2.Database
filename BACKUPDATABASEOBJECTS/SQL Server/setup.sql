@@ -1051,18 +1051,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Procedure [dbo].[StoreProdutosPaginated]
+-- Procedure [dbo].[StoreProductPaginated]
 -- -----------------------------------------------------
 
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
-	-- CREATED BY ALESSANDRO 05/10/2024
+	-- CREATED BY ALESSANDRO 05/17/2024
 	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
-	CREATE PROCEDURE [dbo].[StoreProdutosPaginated]
-		@UserId UNIQUEIDENTIFIER,
-		@Titulo VARCHAR(50),
-		@TipoProduto INT,
-		@Marca VARCHAR(30),
-		@CodigoBarras VARCHAR(30),
+	CREATE PROCEDURE [dbo].[StoreProductPaginated]
+		@Param VARCHAR(MAX),
 		@PageNumber INT,
 		@RowspPage INT
 	AS
@@ -1081,12 +1077,12 @@ GO
 				,[Quantidade]
 				,[PrecoVenda]
 			FROM [APDBDev].[dbo].[Produtos]
-			WHERE 		([ProdutoId]	=		  @UserId				OR	@UserId IS NULL)
-			AND 		([Titulo]		LIKE '%' +@Titulo+ '%'			OR	@Titulo IS NULL)
-			AND 		([TipoProdutoId] =		  @TipoProduto			OR	@TipoProduto IS NULL)
-			AND 		([Marca]		LIKE '%' +@Marca+ '%'			OR	@Marca IS NULL)
-			AND 		([CodigoBarras] LIKE '%' +@CodigoBarras+ '%'	OR	@CodigoBarras IS NULL)
-			AND			(([UsuarioInclusaoId] = @UserId OR [UsuarioUltimaAlteracaoId] = @UserId) OR @UserId IS NULL)
+			WHERE 		([ProdutoId]	=		   @Param				OR	@Param IS NULL)
+			AND 		([Titulo]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
+			AND 		([TipoProdutoId]         = @Param				OR	@Param IS NULL)
+			AND 		([Marca]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
+			AND 		([CodigoBarras] LIKE '%' + @Param + '%'			OR	@Param IS NULL)
+			AND			([PrecoVenda]            = @Param    			OR	@Param IS NULL)
 			ORDER BY [Score] DESC
 			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT @RowspPage ROWS ONLY;
