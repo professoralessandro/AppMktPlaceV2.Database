@@ -233,6 +233,7 @@ BEGIN
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
 		[Score] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
+        [Relevance] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
 		[Peso] INT NULL,
 		[Altura] INT NULL,
 		[Largura] INT NULL,
@@ -1068,22 +1069,27 @@ GO
 			-- SET @RowspPage = 5
 
 			SELECT
-				[ProdutoId]			AS	Identifier
-				,[TipoProdutoId]	AS 	ProductTypeEnum
-				,[Titulo]
-				,[Detalhes]
-				,[CodigoBarras]
-				,[Marca]
-				,[Quantidade]
-				,[PrecoVenda]
-			FROM [APDBDev].[dbo].[Produtos]
-			WHERE 		([ProdutoId]	=		   @Param				OR	@Param IS NULL)
-			AND 		([Titulo]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
-			AND 		([TipoProdutoId]         = @Param				OR	@Param IS NULL)
-			AND 		([Marca]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
-			AND 		([CodigoBarras] LIKE '%' + @Param + '%'			OR	@Param IS NULL)
-			AND			([PrecoVenda]            = @Param    			OR	@Param IS NULL)
-			ORDER BY [Score] DESC
+				[Prd].[ProdutoId]			AS	Identifier
+				,[Prd].[TipoProdutoId]		AS 	ProductTypeEnum
+				,[Img].[File]				AS 	[MainImage]
+				,[Prd].[Titulo]
+				,[Prd].[ResumoDetalhes]
+				,[Prd].[Detalhes]
+				,[Prd].[CodigoBarras]
+				,[Prd].[Marca]
+				,[Prd].[Quantidade]
+				,[Prd].[PrecoVenda]
+			FROM [APDBDev].[dbo].[Produtos] [Prd]
+			LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg] ON [PrdImg].[ProdutoId] = [Prd].[ProdutoId]
+			LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
+			WHERE 		([Prd].[ProdutoId]	=		   @Param				OR	@Param IS NULL)
+			AND 		([Prd].[Titulo]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
+			AND 		([Prd].[Marca]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
+			AND 		([Prd].[CodigoBarras] LIKE '%' + @Param + '%'			OR	@Param IS NULL)
+			AND			([Prd].[PrecoVenda]            = @Param    			OR	@Param IS NULL)
+			AND [Prd].[Ativo] = 1
+			AND [Prd].[Bloqueado] = 0
+			ORDER BY [Prd].[Relevance] DESC, [Prd].[Score] DESC, [Prd].[DataInclusao] DESC, [Prd].[DataUltimaAlteracao] DESC
 			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT @RowspPage ROWS ONLY;
 		END
@@ -1201,6 +1207,30 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
+-- -----------------------------------------------------
+-- Feed table [dbo].[Produtos]
+-- -----------------------------------------------------
+
+INSERT INTO APDBDev.dbo.Produtos
+(ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
+VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, '2024-05-17 14:56:41.860', NULL, 1);
+
+-- -----------------------------------------------------
+-- Feed table [dbo].[Imagens]
+-- -----------------------------------------------------
+
+INSERT INTO APDBDev.dbo.Imagens
+(ImagemId, Titulo, [File], Descricao, ImagemPrincipal, Publico, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao)
+VALUES('707820bb-e1f7-4c1c-86b0-15ed01d84f91', 'Imagem Teste 1', './assets/img/test/d90029fa-c1fc-4310-9913-4c64b57498c8.jpeg', 'Imagem Teste 1', 1, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE());
+
+-- -----------------------------------------------------
+-- Feed table [dbo].[ImagensProdutos]
+-- -----------------------------------------------------
+
+INSERT INTO APDBDev.dbo.ImagensProdutos
+(ImagemProdutoId, ImagemId, ProdutoId)
+VALUES('9c6cb1ac-2834-4a84-86aa-f40ef62dd072', '707820bb-e1f7-4c1c-86b0-15ed01d84f91', 'BB27FD71-648F-4F70-E4A4-08DC7681957E');
 
 -- -----------------------------------------------------
 -- DROPDATABASE AREA
