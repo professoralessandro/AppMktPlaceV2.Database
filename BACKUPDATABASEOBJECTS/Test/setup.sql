@@ -1214,7 +1214,8 @@ GO
 
 INSERT INTO APDBDev.dbo.Produtos
 (ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
-VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, '2024-05-17 14:56:41.860', NULL, 1);
+VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BR
+-- Feed table [dbo].[ImagensProdutos]EVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
 
 -- -----------------------------------------------------
 -- Feed table [dbo].[Imagens]
@@ -1225,7 +1226,6 @@ INSERT INTO APDBDev.dbo.Imagens
 VALUES('707820bb-e1f7-4c1c-86b0-15ed01d84f91', 'Imagem Teste 1', './assets/img/test/d90029fa-c1fc-4310-9913-4c64b57498c8.jpeg', 'Imagem Teste 1', 1, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE());
 
 -- -----------------------------------------------------
--- Feed table [dbo].[ImagensProdutos]
 -- -----------------------------------------------------
 
 INSERT INTO APDBDev.dbo.ImagensProdutos
