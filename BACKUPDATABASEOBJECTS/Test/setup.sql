@@ -325,6 +325,31 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Table [dbo].[ConfiguracoesParametros]
+-- -----------------------------------------------------
+IF OBJECT_ID('[dbo].[ShoppingCart]') IS NULL
+BEGIN
+	CREATE TABLE [dbo].[ShoppingCart] (
+		[ShoppingCartId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+		[UsuarioId] UNIQUEIDENTIFIER,
+		[ProdutoId] UNIQUEIDENTIFIER,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL
+		CONSTRAINT [FK_ShoppingCart_UsuarioId] FOREIGN KEY([UsuarioId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
+		CONSTRAINT [FK_ShoppingCart_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId])
+	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- Table [dbo].[Avaliacoes]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[Avaliacoes]') IS NULL
@@ -690,6 +715,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+-- TODO: REMOVER DAS MODEL
 -- -----------------------------------------------------
 -- Table [dbo].[Bloqueios]
 -- -----------------------------------------------------
@@ -697,8 +723,8 @@ IF OBJECT_ID('[dbo].[Bloqueios]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Bloqueios] (
   		[BloqueioId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[TipoBloqueioId] UNIQUEIDENTIFIER,
-		[ItemBloqueadoId] UNIQUEIDENTIFIER,
+		[TipoBloqueioId] INT,
+		-- [ItemBloqueadoId] UNIQUEIDENTIFIER, -- REMOVIDO
 		[NomeBloqueio] VARCHAR(100) NOT NULL,
 		[isBloqueiaAcesso] BIT NOT NULL,
 		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
@@ -716,19 +742,19 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+-- TODO: ALTERAR NOME NO PROJETO PARA: BloqueiosItens
+-- COMMENT: THIS TABLE CAN BLOCK ANY ITEM LIKE USER, PRODUCT, SERVICE, ADRESS ETC...
 -- -----------------------------------------------------
--- Table [dbo].[BloqueiosProdutos]
+-- Table [dbo].[BloqueiosItens]
 -- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[BloqueiosProdutos]') IS NULL
+IF OBJECT_ID('[dbo].[BloqueiosItens]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[BloqueiosProdutos] (
-  		[AvaliacaoProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[BloqueioId] UNIQUEIDENTIFIER,
-		[ProdutoId] UNIQUEIDENTIFIER,
+  		[BloqueioItemId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+		[BloqueioId] UNIQUEIDENTIFIER NOT NULL,
+		[ItemId] UNIQUEIDENTIFIER NOT NULL,
 		CONSTRAINT [FK_BloqueiosProdutos_BloqueioId] FOREIGN KEY([BloqueioId])
-		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
-		CONSTRAINT [FK_BloqueiosProduto_ProdutoId] FOREIGN KEY([ProdutoId])
-		REFERENCES [dbo].[Produtos] ([ProdutoId]),
+		REFERENCES [dbo].[Bloqueios] ([BloqueioId])
   	)
 END
 GO
@@ -987,6 +1013,29 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Table [log].[Logs]
+-- -----------------------------------------------------
+IF OBJECT_ID('[log].[Logs]') IS NULL
+BEGIN
+	CREATE TABLE [log].[Logs] (
+		[LogId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+		[Message] VARCHAR(MAX) NOT NULL,
+		[Request] VARCHAR(150) NOT NULL,
+		[Method] VARCHAR(10) NOT NULL,
+		[Response] INT,
+		[UserAddedId] UNIQUEIDENTIFIER,
+		[DateAdded] [datetime] NOT NULL
+		CONSTRAINT [FK_Logs_UserAddedId] FOREIGN KEY([UserAddedId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId]),
+  	)
+END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- REGION STORED PROCEDURE
 -- -----------------------------------------------------
 
@@ -1060,6 +1109,7 @@ GO
 	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
 	CREATE PROCEDURE [dbo].[StoreProductPaginated]
 		@Param VARCHAR(MAX),
+		@ProductId UNIQUEIDENTIFIER,
 		@PageNumber INT,
 		@RowspPage INT
 	AS
@@ -1067,11 +1117,23 @@ GO
 			-- ATRIB TESTE PROC
 			-- SET @PageNumber = 2
 			-- SET @RowspPage = 5
-
+			SELECT
+				[T].[Identifier],
+				[T].[ProductTypeEnum],
+				[T].[MainImage],
+				[T].[Titulo],
+				[T].[ResumoDetalhes],
+				[T].[Detalhes],
+				[T].[CodigoBarras],
+				[T].[Marca],
+				[T].[Quantidade],
+				[T].[PrecoVenda]
+			FROM (
 			SELECT
 				[Prd].[ProdutoId]			AS	Identifier
 				,[Prd].[TipoProdutoId]		AS 	ProductTypeEnum
 				,[Img].[File]				AS 	[MainImage]
+				,[dbo].[FNCReturnIsItemcked]([Prd].[ProdutoId]) AS Blocked
 				,[Prd].[Titulo]
 				,[Prd].[ResumoDetalhes]
 				,[Prd].[Detalhes]
@@ -1082,16 +1144,18 @@ GO
 			FROM [APDBDev].[dbo].[Produtos] [Prd]
 			LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg] ON [PrdImg].[ProdutoId] = [Prd].[ProdutoId]
 			LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
-			WHERE 		([Prd].[ProdutoId]	=		   @Param				OR	@Param IS NULL)
-			AND 		([Prd].[Titulo]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
-			AND 		([Prd].[Marca]		LIKE '%' + @Param + '%'			OR	@Param IS NULL)
-			AND 		([Prd].[CodigoBarras] LIKE '%' + @Param + '%'			OR	@Param IS NULL)
-			AND			([Prd].[PrecoVenda]            = @Param    			OR	@Param IS NULL)
+			WHERE 		(LOWER(CONVERT(VARCHAR(50),[Prd].[ProdutoId]))			  =			LOWER(CONVERT(VARCHAR(50),@Param))					OR	@Param IS NULL)
+			OR 			(LOWER(CONVERT(VARCHAR(50),[Prd].[Titulo]))				LIKE '%' +	LOWER(CONVERT(VARCHAR(50),@Param)) + '%'			OR	@Param IS NULL)
+			OR 			(LOWER(CONVERT(VARCHAR(50),[Prd].[Marca]))				LIKE '%' +	LOWER(CONVERT(VARCHAR(50),@Param)) + '%'			OR	@Param IS NULL)
+			OR 			(LOWER(CONVERT(VARCHAR(50),[Prd].[CodigoBarras]))		LIKE '%' +	LOWER(CONVERT(VARCHAR(50),@Param)) + '%'			OR	@Param IS NULL)
+			OR			(LOWER(CONVERT(VARCHAR(50),[Prd].[PrecoVenda]))            =		LOWER(CONVERT(VARCHAR(50),@Param))  				OR	@Param IS NULL)
+			OR          ([Prd].[ProdutoId]										   =		@ProductId											OR @ProductId IS NULL)
 			AND [Prd].[Ativo] = 1
 			AND [Prd].[Bloqueado] = 0
 			ORDER BY [Prd].[Relevance] DESC, [Prd].[Score] DESC, [Prd].[DataInclusao] DESC, [Prd].[DataUltimaAlteracao] DESC
 			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
-			FETCH NEXT @RowspPage ROWS ONLY;
+			FETCH NEXT @RowspPage ROWS ONLY) [T]
+			WHERE [T].[Blocked] = 0;
 		END
 GO
 SET ANSI_NULLS ON
@@ -1123,6 +1187,82 @@ GO
     		END;
 
     		SELECT @IsAdmin AS IsSystemAdmin;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Procedure [dbo].[ReturnShoppingCartStore]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2021
+	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
+	CREATE PROCEDURE [dbo].[ReturnShoppingCartStore]
+		@UserId UNIQUEIDENTIFIER,
+		@PageNumber INT,
+		@RowspPage INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @PageNumber = 2
+			-- SET @RowspPage = 5
+
+			SELECT
+				[ShoppingCartId]			AS		Identifier
+      			,[UsuarioId]
+      			,[ProdutoId]
+ 			FROM [APDBDev].[dbo].[ShoppingCart]
+			WHERE [UsuarioId] = @UserId 
+			ORDER BY	1 DESC
+			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
+			FETCH NEXT	@RowspPage ROWS ONLY;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Procedure [dbo].[ReturnIsItemcked]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2021
+	-- THIS PROCEDURE RETURNS INFORMATION ABOUT ANY ITEM LIKE ADRESS, FONE, USER, PRODUCT IF IT HAS BLOCKED BY SISTEM
+	CREATE PROCEDURE [dbo].[ReturnIsItemcked]
+		@ItemId UNIQUEIDENTIFIER
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			DECLARE @IsBlocked BIT;
+
+    		SELECT @IsBlocked = CASE 
+    		    WHEN EXISTS (
+    		        SELECT
+						[block].[BloqueioId]
+						,[block].[NomeBloqueio]
+						,[block].[Permanente]
+						,[block].[UsuarioInclusaoId]
+						,[block].[UsuarioUltimaAlteracaoId]
+						,[block].[DataInicio]
+						,[block].[DataFim]
+						,[block].[DataInclusao]
+						,[block].[DataUltimaAlteracao]
+						,[block].[Ativo]
+					FROM [APDBDev].[dbo].[Bloqueios] [block]
+					INNER JOIN [APDBDev].[dbo].[BloqueiosItens] [item] ON [item].[ItemId] = @ItemId
+					WHERE Ativo = 1
+					AND [block].[Permanente] = 0
+					AND GETDATE() BETWEEN [DataInicio] AND [DataFim]
+    		    ) THEN 1 
+    		    ELSE 0 
+    		END;
+    		SELECT @IsBlocked AS IsItemBlocked;
 		END
 GO
 SET ANSI_NULLS ON
@@ -1177,10 +1317,61 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- REGION FUNCTION DATABASE
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Function [dbo].[FNCReturnIsItemcked]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2021
+	-- THIS PROCEDURE RETURNS INFORMATION ABOUT ANY ITEM LIKE ADRESS, FONE, USER, PRODUCT IF IT HAS BLOCKED BY SISTEM
+	CREATE FUNCTION [dbo].[FNCReturnIsItemcked](@ItemId UNIQUEIDENTIFIER) RETURNS INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			DECLARE @IsBlocked BIT;
+
+    		SELECT @IsBlocked = CASE 
+    		    WHEN EXISTS (
+    		        SELECT
+						[block].[BloqueioId]
+						,[block].[NomeBloqueio]
+						,[block].[Permanente]
+						,[block].[UsuarioInclusaoId]
+						,[block].[UsuarioUltimaAlteracaoId]
+						,[block].[DataInicio]
+						,[block].[DataFim]
+						,[block].[DataInclusao]
+						,[block].[DataUltimaAlteracao]
+						,[block].[Ativo]
+					FROM [APDBDev].[dbo].[Bloqueios] [block]
+					INNER JOIN [APDBDev].[dbo].[BloqueiosItens] [item] ON [item].[ItemId] = @ItemId
+					WHERE Ativo = 1
+					AND [block].[Permanente] = 0
+					AND GETDATE() BETWEEN [DataInicio] AND [DataFim]
+    		    ) THEN 1 
+    		    ELSE 0 
+    		END;
+    		RETURN @IsBlocked;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- REGION FUNCTION DATABASE
+-- -----------------------------------------------------
+
+
+-- -----------------------------------------------------
 -- REGION SEED DATABASE
 -- -----------------------------------------------------
--- This regions will feed the inicial information that system needs to woks
 
+-- This regions will feed the inicial information that system needs to woks
 
 -- -----------------------------------------------------
 -- Feed table [seg].[Grupos]
@@ -1214,8 +1405,7 @@ GO
 
 INSERT INTO APDBDev.dbo.Produtos
 (ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
-VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BR
--- Feed table [dbo].[ImagensProdutos]EVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
+VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, '2024-05-17 14:56:41.860', NULL, 1);
 
 -- -----------------------------------------------------
 -- Feed table [dbo].[Imagens]
@@ -1226,11 +1416,22 @@ INSERT INTO APDBDev.dbo.Imagens
 VALUES('707820bb-e1f7-4c1c-86b0-15ed01d84f91', 'Imagem Teste 1', './assets/img/test/d90029fa-c1fc-4310-9913-4c64b57498c8.jpeg', 'Imagem Teste 1', 1, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE());
 
 -- -----------------------------------------------------
+-- Feed table [dbo].[ImagensProdutos]
 -- -----------------------------------------------------
 
 INSERT INTO APDBDev.dbo.ImagensProdutos
 (ImagemProdutoId, ImagemId, ProdutoId)
 VALUES('9c6cb1ac-2834-4a84-86aa-f40ef62dd072', '707820bb-e1f7-4c1c-86b0-15ed01d84f91', 'BB27FD71-648F-4F70-E4A4-08DC7681957E');
+
+-- BLOQUEIO DE PRODUTO TESTE
+INSERT INTO APDBDev.dbo.Bloqueios
+(BloqueioId, NomeBloqueio, Permanente, UsuarioInclusaoId, DataInicio, DataFim, DataInclusao,  Ativo)
+VALUES('c52c4eaf-91a9-41db-88da-1b8bf393251c', 'Bloqueio Teste Alessandro', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '2024-01-01', '2026-01-01', GETDATE(),  1);
+
+-- BLOQUEIO DE PRODUTO TESTE: NOME DO PRODUTO: PRODUTO ALESSANDRO NOVO
+INSERT INTO APDBDev.dbo.BloqueiosItens
+(BloqueioItemId, BloqueioId, ItemId)
+VALUES('4225d29b-486a-4e55-9e4b-415e4ab0533f', 'c52c4eaf-91a9-41db-88da-1b8bf393251c', '7f9ab456-a495-4b7f-96ff-f1632ecb1a78');
 
 -- -----------------------------------------------------
 -- DROPDATABASE AREA
@@ -1379,3 +1580,12 @@ VALUES('9c6cb1ac-2834-4a84-86aa-f40ef62dd072', '707820bb-e1f7-4c1c-86b0-15ed01d8
 -- (NEWID(), 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
 -- (NEWID(), 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
 -- (NEWID(), 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
+
+-- INSERT INTO APDBDev.dbo.ShoppingCart
+-- (ShoppingCartId, UsuarioId, ProdutoId)
+-- VALUES(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'253BED7B-CAC9-4309-AA6C-0BBDFFEA3BE4'),
+-- (NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'3C8CD641-8A05-410D-B767-0AAA56780229'),
+-- (NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'F55218E2-B6BE-48FE-9D36-093CB6C55A5F'),
+-- (NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'810CA71B-CF2C-4E80-A77B-094559C8A02D'),
+-- (NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'C8A81D50-264A-40C4-B139-00EEEA87BF18'),
+-- (NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'BB27FD71-648F-4F70-E4A4-08DC7681957E');
