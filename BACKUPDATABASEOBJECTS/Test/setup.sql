@@ -1129,32 +1129,31 @@ GO
 				[T].[Quantidade],
 				[T].[PrecoVenda]
 			FROM (
-			SELECT
-				[Prd].[ProdutoId]			AS	Identifier
-				,[Prd].[TipoProdutoId]		AS 	ProductTypeEnum
-				,[Img].[File]				AS 	[MainImage]
-				,[dbo].[FNCReturnIsItemcked]([Prd].[ProdutoId]) AS Blocked
-				,[Prd].[Titulo]
-				,[Prd].[ResumoDetalhes]
-				,[Prd].[Detalhes]
-				,[Prd].[CodigoBarras]
-				,[Prd].[Marca]
-				,[Prd].[Quantidade]
-				,[Prd].[PrecoVenda]
-			FROM [APDBDev].[dbo].[Produtos] [Prd]
-			LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg] ON [PrdImg].[ProdutoId] = [Prd].[ProdutoId]
-			LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
-			WHERE 		(LOWER(CONVERT(VARCHAR(50),[Prd].[ProdutoId]))			  =			LOWER(CONVERT(VARCHAR(50),@Param))					OR	@Param IS NULL)
-			OR 			(LOWER(CONVERT(VARCHAR(50),[Prd].[Titulo]))				LIKE '%' +	LOWER(CONVERT(VARCHAR(50),@Param)) + '%'			OR	@Param IS NULL)
-			OR 			(LOWER(CONVERT(VARCHAR(50),[Prd].[Marca]))				LIKE '%' +	LOWER(CONVERT(VARCHAR(50),@Param)) + '%'			OR	@Param IS NULL)
-			OR 			(LOWER(CONVERT(VARCHAR(50),[Prd].[CodigoBarras]))		LIKE '%' +	LOWER(CONVERT(VARCHAR(50),@Param)) + '%'			OR	@Param IS NULL)
-			OR			(LOWER(CONVERT(VARCHAR(50),[Prd].[PrecoVenda]))            =		LOWER(CONVERT(VARCHAR(50),@Param))  				OR	@Param IS NULL)
-			OR          ([Prd].[ProdutoId]										   =		@ProductId											OR @ProductId IS NULL)
-			AND [Prd].[Ativo] = 1
-			AND [Prd].[Bloqueado] = 0
-			ORDER BY [Prd].[Relevance] DESC, [Prd].[Score] DESC, [Prd].[DataInclusao] DESC, [Prd].[DataUltimaAlteracao] DESC
-			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
-			FETCH NEXT @RowspPage ROWS ONLY) [T]
+				SELECT
+					[Prd].[ProdutoId]			AS	Identifier
+					,[Prd].[TipoProdutoId]		AS 	ProductTypeEnum
+					,[Img].[File]				AS 	[MainImage]
+					,[dbo].[FNCReturnIsItemcked]([Prd].[ProdutoId]) AS Blocked
+					,[Prd].[Titulo]
+					,[Prd].[ResumoDetalhes]
+					,[Prd].[Detalhes]
+					,[Prd].[CodigoBarras]
+					,[Prd].[Marca]
+					,[Prd].[Quantidade]
+					,[Prd].[PrecoVenda]
+				FROM [APDBDev].[dbo].[Produtos] [Prd]
+				LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg] ON [PrdImg].[ProdutoId] = [Prd].[ProdutoId]
+				LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
+				WHERE 		(LOWER(CONVERT(VARCHAR(50),[Prd].[ProdutoId]))			  =			LOWER(CONVERT(VARCHAR(50),@Param))					OR	@Param IS NULL)
+				OR 			([Prd].[Titulo]											LIKE 		'%' + @Param + '%'									OR	@Param IS NULL)
+				OR 			([Prd].[Marca]											LIKE 		'%' + @Param + '%'									OR	@Param IS NULL)
+				OR 			([Prd].[CodigoBarras] 									LIKE 		'%' + @Param + '%'									OR	@Param IS NULL)
+				OR			(LOWER(CONVERT(VARCHAR(50),[Prd].[PrecoVenda]))            =		LOWER(CONVERT(VARCHAR(50),@Param))  				OR	@Param IS NULL)
+				AND [Prd].[Ativo] = 1
+				AND [Prd].[Bloqueado] = 0
+				ORDER BY [Prd].[Relevance] DESC, [Prd].[Score] DESC, [Prd].[DataInclusao] DESC, [Prd].[DataUltimaAlteracao] DESC
+				OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
+				FETCH NEXT @RowspPage ROWS ONLY) [T]
 			WHERE [T].[Blocked] = 0;
 		END
 GO
