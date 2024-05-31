@@ -232,8 +232,8 @@ BEGIN
 		[QuantidadeCritica] INT NULL,
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
-		[Score] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
-        [Relevance] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
+		[Score] DECIMAL(3,2) DEFAULT 2.00 NOT NULL,
+        [Relevance] DECIMAL(3,2) DEFAULT 2.00 NOT NULL,
 		[Peso] INT NULL,
 		[Altura] INT NULL,
 		[Largura] INT NULL,
@@ -754,27 +754,6 @@ BEGIN
 		[ItemId] UNIQUEIDENTIFIER NOT NULL,
 		CONSTRAINT [FK_BloqueiosItens_BloqueioId] FOREIGN KEY([BloqueioId])
 		REFERENCES [dbo].[Bloqueios] ([BloqueioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[BloqueiosUsuarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[BloqueiosUsuarios]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[BloqueiosUsuarios] (
-  		[AvaliacaoProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[BloqueioId] UNIQUEIDENTIFIER,
-		[UsuarioId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_BloqueiosUsuarios_BloqueioId] FOREIGN KEY([BloqueioId])
-		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
-		CONSTRAINT [FK_BloqueiosUsuarios_ProdutoId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
   	)
 END
 GO
@@ -1401,7 +1380,7 @@ GO
 
 INSERT INTO APDBDev.dbo.Produtos
 (ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
-VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
+VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
 
 -- -----------------------------------------------------
 -- Feed table [dbo].[Imagens]
@@ -1435,3 +1414,142 @@ VALUES('9c6cb1ac-2834-4a84-86aa-f40ef62dd072', '707820bb-e1f7-4c1c-86b0-15ed01d8
 --GO
 --SET QUOTED_IDENTIFIER ON
 --GO
+
+GO
+
+INSERT INTO APDBDev.dbo.Produtos
+(ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Relevance, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
+VALUES
+(N'253BED7B-CAC9-4309-AA6C-0BBDFFEA3BE4', 0, 'Forno Microondas 220V', 'Forno Microondas 220V', 'Forno Microondas 220V', N'', N'', 0, 0, 0, 500.01, 560.01, 5.00, 5.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(N'3C8CD641-8A05-410D-B767-0AAA56780229', 0, 'Forno Microondas 110V', 'Forno Microondas 110V', 'Forno Microondas 110V', N'', N'', 0, 0, 0, 500.01, 560.01, 4.90, 4.90, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(N'F55218E2-B6BE-48FE-9D36-093CB6C55A5F', 0, 'Caixa de fom JBL', 'Caixa de fom JBL', 'Caixa de fom JBL', N'', N'', 0, 0, 0, 2000.10, 2600.99, 4.80, 4.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(N'810CA71B-CF2C-4E80-A77B-094559C8A02D', 0, 'Caixa de fom Sony', 'Caixa de fom Sony', 'Caixa de fom JBL', N'', N'', 0, 0, 0, 2000.10, 2600.99, 4.70, 4.70, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(N'C8A81D50-264A-40C4-B139-00EEEA87BF18', 0, 'Teclado Yamaha PXS210', 'Teclado Yamaha PXS210', 'Teclado Yamaha PXS210', N'', N'', 0, 0, 0, 1200.10, 1680.99, 4.60, 4.60, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S24 Ultra', 'Smarth fone galaxy S24 Ultra', 'Smarth fone galaxy S24 Ultra', N'', N'', 0, 0, 0, 5000.10, 6100.99, 5.00, 5.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S24', 'Smarth fone galaxy S24', 'Smarth fone galaxy S24', N'', N'', 0, 0, 0, 4800.10, 5600.99, 4.95, 4.95, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S23 Ultra', 'Smarth fone galaxy S23 Ultra', 'Smarth fone galaxy S23 Ultra ficha tecnica abreviada', N'', N'', 0, 0, 0, 4600.10, 5500.99, 4.95, 4.95, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S23', 'Smarth fone galaxy S23', 'Smarth fone galaxy S23 ficha tecnica abreviada', N'', N'', 0, 0, 0, 4400.10, 5200.99, 4.90, 4.90, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S22 Ultra', 'Smarth fone galaxy S22 Ultra', 'Smarth fone galaxy S22 ultra ficha tecnica abreviada', N'', N'', 0, 0, 0, 4200.10, 4900.99, 4.85, 4.85, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S22', 'Smarth fone galaxy S22', 'Smarth fone galaxy S22 ficha tecnica abreviada', N'', N'', 0, 0, 0, 4800.10, 5600.99, 4.80, 4.80, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S21 Ultra', 'Smarth fone galaxy S21 Ultra', 'Smarth fone galaxy S21 Ultra ficha tecnica abreviada', N'', N'', 0, 0, 0, 4500.10, 5400.99, 4.80, 4.80, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S21', 'Smarth fone galaxy S21', 'Smarth fone galaxy S21 ficha tecnica abreviada', N'', N'', 0, 0, 0, 4300.10, 5200.99, 4.80, 4.80, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S20 Ultra', 'Smarth fone galaxy S20 Ultra', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 4300.10, 5200.99, 4.70, 4.70, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S20', 'Smarth fone galaxy S21', 'Smarth fone galaxy S20 ficha tecnica abreviada', N'', N'', 0, 0, 0, 4200.10, 5100.99, 4.70, 4.70, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10 Ultra', 'Smarth fone galaxy S10 Ultra', 'Smarth fone galaxy S10 Ultra ficha tecnica abreviada', N'', N'', 0, 0, 0, 4100.10, 5100.99, 4.65, 4.65, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10 Plus', 'Smarth fone galaxy S10 Plus', 'Smarth fone galaxy S10 plus ficha tecnica abreviada', N'', N'', 0, 0, 0, 4000.10, 5000.99, 4.60, 4.60, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1),
+(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 0, 0, 0, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
+
+GO
+
+INSERT INTO APDBDev.dbo.ShoppingCart
+(ShoppingCartId, UsuarioId, ProdutoId, UsuarioInclusaoId, DataInclusao)
+VALUES(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'253BED7B-CAC9-4309-AA6C-0BBDFFEA3BE4', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE()),
+(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'3C8CD641-8A05-410D-B767-0AAA56780229', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE()),
+(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'F55218E2-B6BE-48FE-9D36-093CB6C55A5F', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE()),
+(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'810CA71B-CF2C-4E80-A77B-094559C8A02D', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE()),
+(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'C8A81D50-264A-40C4-B139-00EEEA87BF18', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE()),
+(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'BB27FD71-648F-4F70-E4A4-08DC7681957E', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE());
