@@ -724,9 +724,8 @@ BEGIN
 	CREATE TABLE [dbo].[Bloqueios] (
   		[BloqueioId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[TipoBloqueioId] INT,
-		-- [ItemBloqueadoId] UNIQUEIDENTIFIER, -- REMOVIDO
 		[NomeBloqueio] VARCHAR(100) NOT NULL,
-		[isBloqueiaAcesso] BIT NOT NULL,
+		[Permanente] BIT NOT NULL,
 		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInicio] [datetime] NULL,
@@ -749,11 +748,11 @@ GO
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[BloqueiosItens]') IS NULL
 BEGIN
-	CREATE TABLE [dbo].[BloqueiosProdutos] (
+	CREATE TABLE [dbo].[BloqueiosItens] (
   		[BloqueioItemId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[BloqueioId] UNIQUEIDENTIFIER NOT NULL,
 		[ItemId] UNIQUEIDENTIFIER NOT NULL,
-		CONSTRAINT [FK_BloqueiosProdutos_BloqueioId] FOREIGN KEY([BloqueioId])
+		CONSTRAINT [FK_BloqueiosItens_BloqueioId] FOREIGN KEY([BloqueioId])
 		REFERENCES [dbo].[Bloqueios] ([BloqueioId])
   	)
 END
@@ -1159,7 +1158,6 @@ GO
 	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
 	CREATE PROCEDURE [dbo].[StoreProductPaginated]
 		@Param VARCHAR(MAX),
-		@ProductId UNIQUEIDENTIFIER,
 		@PageNumber INT,
 		@RowspPage INT
 	AS

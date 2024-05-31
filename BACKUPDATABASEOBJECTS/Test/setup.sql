@@ -724,9 +724,8 @@ BEGIN
 	CREATE TABLE [dbo].[Bloqueios] (
   		[BloqueioId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[TipoBloqueioId] INT,
-		-- [ItemBloqueadoId] UNIQUEIDENTIFIER, -- REMOVIDO
 		[NomeBloqueio] VARCHAR(100) NOT NULL,
-		[isBloqueiaAcesso] BIT NOT NULL,
+		[Permanente] BIT NOT NULL,
 		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInicio] [datetime] NULL,
@@ -749,33 +748,12 @@ GO
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[BloqueiosItens]') IS NULL
 BEGIN
-	CREATE TABLE [dbo].[BloqueiosProdutos] (
+	CREATE TABLE [dbo].[BloqueiosItens] (
   		[BloqueioItemId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[BloqueioId] UNIQUEIDENTIFIER NOT NULL,
 		[ItemId] UNIQUEIDENTIFIER NOT NULL,
-		CONSTRAINT [FK_BloqueiosProdutos_BloqueioId] FOREIGN KEY([BloqueioId])
+		CONSTRAINT [FK_BloqueiosItens_BloqueioId] FOREIGN KEY([BloqueioId])
 		REFERENCES [dbo].[Bloqueios] ([BloqueioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[BloqueiosUsuarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[BloqueiosUsuarios]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[BloqueiosUsuarios] (
-  		[AvaliacaoProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[BloqueioId] UNIQUEIDENTIFIER,
-		[UsuarioId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_BloqueiosUsuarios_BloqueioId] FOREIGN KEY([BloqueioId])
-		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
-		CONSTRAINT [FK_BloqueiosUsuarios_ProdutoId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
   	)
 END
 GO
@@ -1159,7 +1137,6 @@ GO
 	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
 	CREATE PROCEDURE [dbo].[StoreProductPaginated]
 		@Param VARCHAR(MAX),
-		@ProductId UNIQUEIDENTIFIER,
 		@PageNumber INT,
 		@RowspPage INT
 	AS
