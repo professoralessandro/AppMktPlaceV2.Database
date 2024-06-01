@@ -232,8 +232,8 @@ BEGIN
 		[QuantidadeCritica] INT NULL,
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
-		[Score] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
-        [Relevance] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
+		[Score] DECIMAL(3,2) DEFAULT 2.00 NOT NULL,
+        [Relevance] DECIMAL(3,2) DEFAULT 2.00 NOT NULL,
 		[Peso] INT NULL,
 		[Altura] INT NULL,
 		[Largura] INT NULL,
@@ -732,6 +732,7 @@ BEGIN
 		[DataFim] [datetime] NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NULL,
+		[Detalhes] VARCHAR(MAX) NOT NULL,
 		[Ativo] [bit] NOT NULL
 	)
 END
@@ -754,27 +755,6 @@ BEGIN
 		[ItemId] UNIQUEIDENTIFIER NOT NULL,
 		CONSTRAINT [FK_BloqueiosItens_BloqueioId] FOREIGN KEY([BloqueioId])
 		REFERENCES [dbo].[Bloqueios] ([BloqueioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[BloqueiosUsuarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[BloqueiosUsuarios]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[BloqueiosUsuarios] (
-  		[AvaliacaoProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[BloqueioId] UNIQUEIDENTIFIER,
-		[UsuarioId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_BloqueiosUsuarios_BloqueioId] FOREIGN KEY([BloqueioId])
-		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
-		CONSTRAINT [FK_BloqueiosUsuarios_ProdutoId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
   	)
 END
 GO
@@ -1400,8 +1380,8 @@ GO
 -- -----------------------------------------------------
 
 INSERT INTO APDBDev.dbo.Produtos
-(ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
-VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
+(ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Relevance, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
+VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, 'Cesta de chocolates personalizada', 'Cesta de chocolates personalizada', 'Cesta de chocolates personalizada com diversos chocolates, chocotone.', N'', N'', 0, 0, 0, 150.01, 205.50, 4.90, 4.95, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
 
 -- -----------------------------------------------------
 -- Feed table [dbo].[Imagens]
