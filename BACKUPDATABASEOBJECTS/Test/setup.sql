@@ -1191,6 +1191,91 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Procedure [dbo].[AdressPaginated]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 05/17/2024
+	-- THIS PROCEDURE RETURNS TABLE ADRESS FOR STORE PAGINATED THAT HAS NOT BLOCKED
+	-- TODO: ATRIBUTE @Usuario NOT WORKING, TECNICAL DEBIT
+	CREATE PROCEDURE [dbo].[AdressPaginated]
+		@Id UNIQUEIDENTIFIER,
+		@UserId UNIQUEIDENTIFIER,
+		@Usuario VARCHAR(250),
+		@TipoEndereco INT,
+		@Logradouro VARCHAR(50),
+		@IsPrincipal BIT,
+		@Ativo BIT,
+		@PageNumber INT,
+		@RowspPage INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @PageNumber = 2
+			-- SET @RowspPage = 5
+			SELECT
+				[T].[Identifier]
+      			,[T].[AddressTypeEnum]
+      			,[T].[Logradouro]
+      			,[T].[Numero]
+      			,[T].[Complemento]
+      			,[T].[Bairro]
+      			,[T].[Cidade]
+      			,[T].[Estado]
+      			,[T].[CEP]
+      			,[T].[PontoReferencia]
+      			,[T].[UsuarioInclusaoId]
+      			,[T].[UsuarioUltimaAlteracaoId]
+      			,[T].[DataInclusao]
+      			,[T].[DataUltimaAlteracao]
+      			,[T].[IsPrincipal]
+      			,[T].[Ativo]
+			FROM (
+				SELECT
+					[end].[EnderecoId]			AS	Identifier
+      				,[end].[TipoEnderecoId]		AS 	AddressTypeEnum
+					,[dbo].[FNCReturnIsItemcked]([end].[EnderecoId]) AS Blocked
+      				,[end].[Logradouro]
+      				,[end].[Numero]
+      				,[end].[Complemento]
+      				,[end].[Bairro]
+      				,[end].[Cidade]
+      				,[end].[Estado]
+      				,[end].[CEP]
+      				,[end].[PontoReferencia]
+      				,[end].[UsuarioInclusaoId]
+      				,[end].[UsuarioUltimaAlteracaoId]
+      				,[end].[DataInclusao]
+      				,[end].[DataUltimaAlteracao]
+      				,[end].[IsPrincipal]
+      				,[end].[Ativo]
+				FROM [APDBDev].[dbo].[Enderecos] [end]
+				LEFT JOIN [APDBDev].[dbo].[EnderecosUsuarios] [endusu] ON [endusu].[EnderecoId] = [endusu].[EnderecoId]
+				LEFT JOIN [APDBDev].[seg].[Usuarios] [usu] 				ON [endusu].[UsuarioId] = [usu].[UsuarioId]
+				WHERE 		([end].[EnderecoId]		=		  		@Id					OR	@Id 			IS NULL)
+				AND 		([usu].[UsuarioId]		=		  		@UserId				OR	@UserId 		IS NULL)
+				AND 		([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				-- OR 			([usu].[Login]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				-- OR 			([usu].[NmrDocumento]	LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				-- OR 			([usu].[Nome]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				-- OR 			([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([end].[TipoEnderecoId]	 =		  	@TipoEndereco			OR	@TipoEndereco	IS NULL)
+				AND 		([end].[Logradouro]		LIKE 	'%' +@Logradouro+ '%'		OR	@Usuario 		IS NULL)
+				AND 		([end].[IsPrincipal] 	 =		  	@IsPrincipal			OR	@IsPrincipal 	IS NULL)
+				AND			([end].[Ativo] 			 = 			@Ativo 					OR	@Ativo 			IS NULL)
+				AND [usu].[Bloqueado] = 0
+				ORDER BY [end].[Logradouro] DESC, [end].[DataInclusao] DESC, [end].[DataUltimaAlteracao] DESC
+				OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
+				FETCH NEXT @RowspPage ROWS ONLY) [T]
+			WHERE [T].[Blocked] = 0;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- Procedure [seg].[ReturnUsersIsASystemAdmin]
 -- -----------------------------------------------------
 
@@ -1418,6 +1503,7 @@ VALUES('9c6cb1ac-2834-4a84-86aa-f40ef62dd072', '707820bb-e1f7-4c1c-86b0-15ed01d8
 
 GO
 
+-- ADDING PRODUCTS
 INSERT INTO APDBDev.dbo.Produtos
 (ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Relevance, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
 VALUES
@@ -1551,6 +1637,7 @@ VALUES
 
 GO
 
+-- ADDING PRODUCT SHOPPING CART
 INSERT INTO APDBDev.dbo.ShoppingCart
 (ShoppingCartId, UsuarioId, ProdutoId, UsuarioInclusaoId, DataInclusao)
 VALUES(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'253BED7B-CAC9-4309-AA6C-0BBDFFEA3BE4', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9',GETDATE()),
@@ -1562,22 +1649,37 @@ VALUES(NEWID(), N'D2A833DE-5BB4-4931-A3C2-133C8994072A', N'253BED7B-CAC9-4309-AA
 
 GO
 
+-- ADDING BLOCK
 INSERT INTO APDBDev.dbo.Bloqueios
 (BloqueioId, TipoBloqueioId, NomeBloqueio, Permanente, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInicio, DataFim, DataInclusao, DataUltimaAlteracao, Detalhes, Ativo)
 VALUES
 ('b853394f-2034-4e36-9efa-64ffd006770b', 0, 'Bloqueio - Smarth fone galaxy S10 Blocked', 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, '2020-01-01', '2025-01-01', GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1),
+('7629714d-ffed-4298-adf5-417c9b703ff6', 0, 'Bloqueio - TESTE BLOQUEIO 2', 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, '2020-01-01', '2025-01-01', GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1),
 ('d5a8620a-d089-48e3-bc00-8ab227c40b90', 0, 'Bloqueio - Smarth fone galaxy S10 Plus Blocked Permanente', 1, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, NULL, NULL, GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1);
 
+-- ADDING USER TO PRODUCTS
 INSERT INTO APDBDev.dbo.BloqueiosItens
 (BloqueioItemId, BloqueioId, ItemId)
 VALUES
 (NEWID(), 'b853394f-2034-4e36-9efa-64ffd006770b', 'df0d97a9-922e-41ab-8619-1782d45d2585'),
 (NEWID(), 'd5a8620a-d089-48e3-bc00-8ab227c40b90', '72813eed-6d5d-44d4-97fa-f1807aa729b0');
 
+-- ADDING END
 INSERT INTO APDBDev.dbo.Enderecos
 (EnderecoId, TipoEnderecoId, Logradouro, Numero, Complemento, Bairro, Cidade, Estado, CEP, PontoReferencia, UsuarioInclusaoId, DataInclusao, IsPrincipal, Ativo)
-VALUES('68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 1, 'Av Guaruja', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11442000', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1);
+VALUES
+('68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 1, 'Av Guaruja', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
+('d10424c6-200d-4a3f-9451-7c3f7c88304d', 1, 'TESTE BLOQUEIO 1', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
+('17b8af41-3634-47e5-8d50-6f4b2a7b2e4f', 1, 'TESTE BLOQUEIO 2', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
+('3e9c33e1-7afd-4e2d-a2a3-c24d4102c1b6', 1, 'Av Guaruja Teste END sem USER', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1);
 
+-- ADDING USER TO ADRESS
 INSERT INTO APDBDev.dbo.EnderecosUsuarios
 (EnderecoUsuarioId, EnderecoId, UsuarioId)
 VALUES(NEWID(), '68a3c26e-6569-4e3e-ac70-fef24ec9f91b', N'D2A833DE-5BB4-4931-A3C2-133C8994072A');
+
+-- ADDING USER TO PRODUCTS
+INSERT INTO APDBDev.dbo.BloqueiosItens
+(BloqueioItemId, BloqueioId, ItemId)
+VALUES
+(NEWID(), '7629714d-ffed-4298-adf5-417c9b703ff6', 'd10424c6-200d-4a3f-9451-7c3f7c88304d');
