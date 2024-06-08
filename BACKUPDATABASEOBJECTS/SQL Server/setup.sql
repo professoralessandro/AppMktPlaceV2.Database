@@ -1216,6 +1216,7 @@ GO
 			SELECT
 				[T].[Identifier]
       			,[T].[AddressTypeEnum]
+				,[T].[UsuarioId]
       			,[T].[Logradouro]
       			,[T].[Numero]
       			,[T].[Complemento]
@@ -1235,6 +1236,7 @@ GO
 					[end].[EnderecoId]			AS	Identifier
       				,[end].[TipoEnderecoId]		AS 	AddressTypeEnum
 					,[dbo].[FNCReturnIsItemcked]([end].[EnderecoId]) AS Blocked
+					,[usu].[UsuarioId]
       				,[end].[Logradouro]
       				,[end].[Numero]
       				,[end].[Complemento]
@@ -1250,15 +1252,14 @@ GO
       				,[end].[IsPrincipal]
       				,[end].[Ativo]
 				FROM [APDBDev].[dbo].[Enderecos] [end]
-				LEFT JOIN [APDBDev].[dbo].[EnderecosUsuarios] [endusu] ON [endusu].[EnderecoId] = [endusu].[EnderecoId]
-				LEFT JOIN [APDBDev].[seg].[Usuarios] [usu] 				ON [endusu].[UsuarioId] = [usu].[UsuarioId]
+				INNER JOIN [APDBDev].[dbo].[EnderecosUsuarios] [endusu]		ON [endusu].[EnderecoId] = [end].[EnderecoId]
+				INNER JOIN [APDBDev].[seg].[Usuarios] [usu] 				ON [usu].[UsuarioId]	 = [endusu].[UsuarioId]
 				WHERE 		([end].[EnderecoId]		=		  		@Id					OR	@Id 			IS NULL)
 				AND 		([usu].[UsuarioId]		=		  		@UserId				OR	@UserId 		IS NULL)
+				AND			([usu].[Login]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[NmrDocumento]	LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[Nome]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
 				AND 		([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[Login]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[NmrDocumento]	LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[Nome]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
 				AND 		([end].[TipoEnderecoId]	 =		  	@TipoEndereco			OR	@TipoEndereco	IS NULL)
 				AND 		([end].[Logradouro]		LIKE 	'%' +@Logradouro+ '%'		OR	@Usuario 		IS NULL)
 				AND 		([end].[IsPrincipal] 	 =		  	@IsPrincipal			OR	@IsPrincipal 	IS NULL)

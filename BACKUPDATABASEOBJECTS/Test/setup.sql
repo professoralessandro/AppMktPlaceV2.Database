@@ -1216,6 +1216,7 @@ GO
 			SELECT
 				[T].[Identifier]
       			,[T].[AddressTypeEnum]
+				,[T].[UsuarioId]
       			,[T].[Logradouro]
       			,[T].[Numero]
       			,[T].[Complemento]
@@ -1235,6 +1236,7 @@ GO
 					[end].[EnderecoId]			AS	Identifier
       				,[end].[TipoEnderecoId]		AS 	AddressTypeEnum
 					,[dbo].[FNCReturnIsItemcked]([end].[EnderecoId]) AS Blocked
+					,[usu].[UsuarioId]
       				,[end].[Logradouro]
       				,[end].[Numero]
       				,[end].[Complemento]
@@ -1250,15 +1252,14 @@ GO
       				,[end].[IsPrincipal]
       				,[end].[Ativo]
 				FROM [APDBDev].[dbo].[Enderecos] [end]
-				LEFT JOIN [APDBDev].[dbo].[EnderecosUsuarios] [endusu] ON [endusu].[EnderecoId] = [endusu].[EnderecoId]
-				LEFT JOIN [APDBDev].[seg].[Usuarios] [usu] 				ON [endusu].[UsuarioId] = [usu].[UsuarioId]
+				INNER JOIN [APDBDev].[dbo].[EnderecosUsuarios] [endusu]		ON [endusu].[EnderecoId] = [end].[EnderecoId]
+				INNER JOIN [APDBDev].[seg].[Usuarios] [usu] 				ON [usu].[UsuarioId]	 = [endusu].[UsuarioId]
 				WHERE 		([end].[EnderecoId]		=		  		@Id					OR	@Id 			IS NULL)
 				AND 		([usu].[UsuarioId]		=		  		@UserId				OR	@UserId 		IS NULL)
+				AND			([usu].[Login]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[NmrDocumento]	LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[Nome]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
 				AND 		([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[Login]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[NmrDocumento]	LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[Nome]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
-				-- OR 			([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
 				AND 		([end].[TipoEnderecoId]	 =		  	@TipoEndereco			OR	@TipoEndereco	IS NULL)
 				AND 		([end].[Logradouro]		LIKE 	'%' +@Logradouro+ '%'		OR	@Usuario 		IS NULL)
 				AND 		([end].[IsPrincipal] 	 =		  	@IsPrincipal			OR	@IsPrincipal 	IS NULL)
@@ -1676,7 +1677,11 @@ VALUES
 -- ADDING USER TO ADRESS
 INSERT INTO APDBDev.dbo.EnderecosUsuarios
 (EnderecoUsuarioId, EnderecoId, UsuarioId)
-VALUES(NEWID(), '68a3c26e-6569-4e3e-ac70-fef24ec9f91b', N'D2A833DE-5BB4-4931-A3C2-133C8994072A');
+VALUES
+(NEWID(), '68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 'd2a833de-5bb4-4931-a3c2-133c8994072a'),
+(NEWID(), 'd10424c6-200d-4a3f-9451-7c3f7c88304d', '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
+(NEWID(), '17b8af41-3634-47e5-8d50-6f4b2a7b2e4f', '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
+(NEWID(), '3e9c33e1-7afd-4e2d-a2a3-c24d4102c1b6', '9a5f0c64-8103-4ee1-8acd-84b28090d898');
 
 -- ADDING USER TO PRODUCTS
 INSERT INTO APDBDev.dbo.BloqueiosItens
