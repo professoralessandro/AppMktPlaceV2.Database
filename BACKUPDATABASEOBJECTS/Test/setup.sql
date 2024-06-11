@@ -1430,6 +1430,85 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Procedure [seg].[UsuariosPaginated]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 11/06/2024
+	-- THIS PROCEDURE RETURNS USER UMBLOCKED PAGINATED
+	ALTER PROCEDURE [seg].[UsuariosPaginated]
+		@Id UNIQUEIDENTIFIER,
+		@UserName VARCHAR(255),
+		@Nome VARCHAR(255),
+		@NmrDocumento VARCHAR(255),
+		@Email VARCHAR(255),
+		@Ativo BIT,
+		@PageNumber INT,
+		@RowspPage INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @PageNumber = 2
+			-- SET @RowspPage = 5
+			SELECT
+				[T].[Identifier]									AS	Identifier
+      			,[T].[Login]
+      			,[T].[NmrDocumento]
+      			,[T].[TipoDocumentoId]
+      			,[T].[Senha]
+      			,[T].[Nome]
+      			,[T].[DataNascimento]
+      			,[T].[Sexo]
+      			,[T].[EstadoCivil]
+      			,[T].[Email]
+      			,[T].[Bloqueado]
+      			,[T].[UsuarioInclusaoId]
+      			,[T].[UsuarioUltimaAlteracaoId]
+      			,[T].[DataInclusao]
+      			,[T].[DataUltimaAlteracao]
+      			,[T].[DataUltimaTrocaSenha]
+      			,[T].[DataUltimoLogin]
+      			,[T].[Ativo]
+			FROM (
+				SELECT
+					[User].[UsuarioId]									AS	Identifier
+					,[dbo].[FNCReturnIsItemcked]([User].[UsuarioId]) 	AS 	Blocked
+      				,[User].[Login]
+      				,[User].[NmrDocumento]
+      				,[User].[TipoDocumentoId]
+      				,[User].[Senha]
+      				,[User].[Nome]
+      				,[User].[DataNascimento]
+      				,[User].[Sexo]
+      				,[User].[EstadoCivil]
+      				,[User].[Email]
+      				,[User].[Bloqueado]
+      				,[User].[UsuarioInclusaoId]
+      				,[User].[UsuarioUltimaAlteracaoId]
+      				,[User].[DataInclusao]
+      				,[User].[DataUltimaAlteracao]
+      				,[User].[DataUltimaTrocaSenha]
+      				,[User].[DataUltimoLogin]
+      				,[User].[Ativo]
+				FROM [APDBDev].[seg].[Usuarios] [User]
+				WHERE 		([User].[UsuarioId]						=		  @Id					OR	@Id 			IS NULL)
+				AND 		([User].[Login]							=		  @UserName				OR	@UserName 		IS NULL)
+				AND 		([User].[Nome]							=		  @Nome					OR	@Nome	 		IS NULL)
+				AND 		([User].[NmrDocumento]					=		  @NmrDocumento			OR	@NmrDocumento 	IS NULL)
+				AND 		([User].[Email]							=		  @Email				OR	@Email 			IS NULL)
+				AND			([User].[Ativo] 			 			= 		  @Ativo 				OR	@Ativo 			IS NULL)
+				ORDER BY [User].[DataInclusao], [User].[Email], [User].[NmrDocumento] DESC
+				OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
+				FETCH NEXT @RowspPage ROWS ONLY) [T]
+			WHERE [T].[Blocked] = 0;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- REGION SEED DATABASE
 -- -----------------------------------------------------
 
