@@ -1158,10 +1158,10 @@ GO
 				[T].[PrecoVenda]
 			FROM (
 				SELECT
-					[Prd].[ProdutoId]			AS	Identifier
-					,[Prd].[TipoProdutoId]		AS 	ProductTypeEnum
+					[Prd].[ProdutoId]			AS	[Identifier]
+					,[Prd].[TipoProdutoId]		AS 	[ProductTypeEnum]
 					,[Img].[File]				AS 	[MainImage]
-					,[dbo].[FNCReturnIsItemcked]([Prd].[ProdutoId]) AS Blocked
+					,[dbo].[FNCReturnIsItemcked]([Prd].[ProdutoId]) AS [Blocked]
 					,[Prd].[Titulo]
 					,[Prd].[ResumoDetalhes]
 					,[Prd].[Detalhes]
@@ -1341,13 +1341,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Procedure [dbo].[ReturnIsItemcked]
+-- Procedure [dbo].[ReturnIsItemBlocked]
 -- -----------------------------------------------------
 
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2021
 	-- THIS PROCEDURE RETURNS INFORMATION ABOUT ANY ITEM LIKE ADRESS, FONE, USER, PRODUCT IF IT HAS BLOCKED BY SISTEM
-	CREATE PROCEDURE [dbo].[ReturnIsItemcked]
+	CREATE PROCEDURE [dbo].[ReturnIsItemBlocked]
 		@ItemId UNIQUEIDENTIFIER
 	AS
 		BEGIN
@@ -1436,7 +1436,7 @@ GO
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 11/06/2024
 	-- THIS PROCEDURE RETURNS USER UMBLOCKED PAGINATED
-	ALTER PROCEDURE [seg].[UsuariosPaginated]
+	CREATE PROCEDURE [seg].[UsuariosPaginated]
 		@Id UNIQUEIDENTIFIER,
 		@UserName VARCHAR(255),
 		@Nome VARCHAR(255),
@@ -1509,6 +1509,51 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Procedure [seg].[ReturnUsersToSelect]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 06/13/2024
+	-- THIS PROCEDURE RETURNS TABLE THE USER BY PARAMETER PAGINATED
+	CREATE PROCEDURE [seg].[ReturnUsersToSelect]
+		@Param VARCHAR(MAX),
+		@PageNumber INT,
+		@RowspPage INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @Param VARCHAR(MAX) = NULL,
+			-- SET @PageNumber = 1
+			-- SET @RowspPage = 10
+			SELECT
+				[T].[UsuarioId]			AS	[Key],
+				[T].[Nome]				AS 	[Parameter]
+			FROM (
+				SELECT
+					[usu].[UsuarioId]
+					,[usu].[Nome]
+					,[dbo].[FNCReturnIsItemcked]([usu].[UsuarioId]) AS Blocked
+				FROM [APDBDev].[seg].[Usuarios] [usu]
+				WHERE 
+				(LOWER(CONVERT(VARCHAR(50),[usu].[UsuarioId]))			  =			LOWER(CONVERT(VARCHAR(50),@Param))
+				OR 			LOWER([usu].[Login])											LIKE 		'%' + LOWER(@Param) + '%'
+				OR 			LOWER([usu].[NmrDocumento])										LIKE 		'%' + LOWER(@Param) + '%'
+				OR 			LOWER([usu].[Nome]) 											LIKE 		'%' + LOWER(@Param) + '%'
+				OR 			LOWER([usu].[Email]) 											LIKE 		'%' + LOWER(@Param) + '%'
+				OR	@Param IS NULL)
+				AND [usu].[Ativo] = 1
+				ORDER BY [usu].[Nome] DESC, [usu].[Email] DESC, [usu].[DataInclusao] DESC, [usu].[DataUltimaAlteracao] DESC
+				OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
+				FETCH NEXT @RowspPage ROWS ONLY) [T]
+			WHERE [T].[Blocked] = 0;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- REGION SEED DATABASE
 -- -----------------------------------------------------
 
@@ -1533,7 +1578,7 @@ GO
 
 INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
 VALUES ('9a5f0c64-8103-4ee1-8acd-84b28090d898', 'System', '59647e61-db07-4b43-993d-3f7eda18fe7f', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1),
-('d2a833de-5bb4-4931-a3c2-133c8994072a', 'Master', 'cb4ba730-222c-4b05-bb56-c2fec255bd9d', '00000000000', 1, '@M45ter', 'Master', GETDATE(), 'N', 'N', 'system@appmkt.com.br', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
+('d2a833de-5bb4-4931-a3c2-133c8994072a', 'Master', 'cb4ba730-222c-4b05-bb56-c2fec255bd9d', '00000000000', 1, '@M45ter', 'Master', GETDATE(), 'N', 'N', 'master@appmkt.com.br', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
 GO
 SET ANSI_NULLS ON
 GO
