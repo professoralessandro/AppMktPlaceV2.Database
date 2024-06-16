@@ -16,6 +16,8 @@ VERSAO 1.0
 CREATE TABLE public.log (
 	logid uuid NOT NULL,
 	message text NULL,
+	previousPayload text NULL,
+	currentPayload text NULL,
 	request varchar(200) NULL,
 	response varchar(3) NULL,
 	"method" varchar(20) NULL,
