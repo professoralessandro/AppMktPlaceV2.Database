@@ -151,7 +151,7 @@ BEGIN
 		[RecursoId] UNIQUEIDENTIFIER,
 		CONSTRAINT [FK_GruposRecursos_GrupoId] FOREIGN KEY([GrupoId])
 		REFERENCES [seg].[Grupos] ([GrupoId]),
-		CONSTRAINT [FK_TelefonesUsuarios_RecursoId] FOREIGN KEY([RecursoId])
+		CONSTRAINT [FK_GruposRecursos_RecursoId] FOREIGN KEY([RecursoId])
 		REFERENCES [seg].[Recursos] ([RecursoId]),
   	)
 END
@@ -350,76 +350,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[Avaliacoes]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[Avaliacoes]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[Avaliacoes] (
-  		[AvaliacaoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[ProdutoId] UNIQUEIDENTIFIER,
-		[VendedorId] UNIQUEIDENTIFIER,
-    	[Descricao] VARCHAR(MAX) NOT NULL,
-		[Valor] DECIMAL(2, 2) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
-		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
-		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NULL,
-		[Ativo] [bit] NOT NULL,
-		CONSTRAINT [FK_Avaliacoes_ProdutoId] FOREIGN KEY([ProdutoId])
-		REFERENCES [dbo].[Produtos] ([ProdutoId]),
-		CONSTRAINT [FK_Avaliacoes_VendedorId] FOREIGN KEY([VendedorId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[AvaliacoesProdutos]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[AvaliacoesProdutos]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[AvaliacoesProdutos] (
-  		[AvaliacaoProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[AvaliacaoId] UNIQUEIDENTIFIER,
-		[ProdutoId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_AvaliacoesProdutos_AvaliacaoId] FOREIGN KEY([AvaliacaoId])
-		REFERENCES [dbo].[Avaliacoes] ([AvaliacaoId]),
-		CONSTRAINT [FK_AvaliacoesProdutos_ProdutoId] FOREIGN KEY([ProdutoId])
-		REFERENCES [dbo].[Produtos] ([ProdutoId]),
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[AvaliacoesVendedores]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[AvaliacoesVendedores]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[AvaliacoesVendedores] (
-  		[AvaliacaoVendedorId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[AvaliacaoId] UNIQUEIDENTIFIER,
-		[VendedorId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_AvaliacoesVendedores_AvaliacaoId] FOREIGN KEY([AvaliacaoId])
-		REFERENCES [dbo].[Avaliacoes] ([AvaliacaoId]),
-		CONSTRAINT [FK_AvaliacoesVendedores_VendedorId] FOREIGN KEY([VendedorId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
 -- Table [dbo].[Telefones]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[Telefones]') IS NULL
@@ -515,41 +445,20 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[Situacoes]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[Situacoes]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[Situacoes] (
-		[SituacaoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[Descricao] VARCHAR(150) NOT NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
-		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
-		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NULL,
-		[Ativo] [bit] NOT NULL
-	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
 -- Table [dbo].[Lancamentos]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[Lancamentos]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Lancamentos] (
 		[LancamentoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[TipoLancamentoId] UNIQUEIDENTIFIER,
-		[SituacaoId] UNIQUEIDENTIFIER,
+		[TipoLancamento] INT NOT NULL,
+		[Status] INT NOT NULL,
 		[Referencia] VARCHAR(50) NOT NULL,
 		[ValorLancamento] DECIMAL(10, 2) NOT NULL,
 		[DataBaixa] [datetime] NULL,
 		[Observacao] [varchar](max) NULL,
-		[UsuarioIdBaixa] INT NULL,
-		[LancamentoIdPai] INT NULL,
+		[UsuarioIdBaixa] UNIQUEIDENTIFIER NULL,
+		[LancamentoIdPai] UNIQUEIDENTIFIER NULL,
 		[QtdeParcelas] [int] NOT NULL,
 		[NmrParcela] [int] NOT NULL,
 		[ValorParcela] DECIMAL(10, 2) NULL,
@@ -559,9 +468,7 @@ BEGIN
 		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
 		CONSTRAINT [FK_Lancamentos_UsuarioInclusaoId] FOREIGN KEY([UsuarioInclusaoId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-		CONSTRAINT [FK_Lancamentos_SituacaoId] FOREIGN KEY([SituacaoId])
-		REFERENCES [dbo].[Situacoes] ([SituacaoId])
+		REFERENCES [seg].[Usuarios] ([UsuarioId])
 	)
 END
 GO
@@ -577,7 +484,7 @@ IF OBJECT_ID('[dbo].[Garantias]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Garantias] (
   		[GarantiaId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[TipoGarantiaId] UNIQUEIDENTIFIER,
+		[TipoGarantia] INT,
 		[Descricao] VARCHAR(50) NOT NULL,
 		[Detalhes] VARCHAR(MAX) NOT NULL,
 		[Periodo] VARCHAR(20)  NULL,
@@ -693,13 +600,14 @@ BEGIN
 	CREATE TABLE [dbo].[Entregas] (
   		[EntregaId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[ResponsavelEntregaId] UNIQUEIDENTIFIER,
-		[TipoEntregaId] UNIQUEIDENTIFIER,
-		[DataPrevistaEntrega] DATETIME NOT NULL,
+		[TipoEntrega] INT NOT NULL,
+		[DataPrevistaEntrega] DATETIME NULL,
 		[DataEfetivaEnrega] DATETIME NULL,
-		[NmrDocumento] VARCHAR(50) NOT NULL,
-		[TipoDocumentoId] UNIQUEIDENTIFIER,
-		[NomeRecebedor] VARCHAR(100) NOT NULL,
-		[isEntregueTitular] BIT NOT NULL,
+		[Status] INT NOT NULL,
+		[NmrDocumento] VARCHAR(50) NULL,
+		[TipoDocumento] INT NULL,
+		[NomeRecebedor] VARCHAR(100) NULL,
+		[IsEntregueTitular] BIT NULL,
 		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
@@ -920,36 +828,26 @@ IF OBJECT_ID('[dbo].[Compras]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Compras] (
   		[CompraId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[CodigoCompra] VARCHAR(20) NULL,
+		[CodigoCompra] VARCHAR(30) NULL,
 		[CodigoPagamento] VARCHAR(20) NULL,
-  		[ProdutoId] UNIQUEIDENTIFIER,
+		[Contador] INT IDENTITY(1,1) NOT NULL,
   		[CompradorId] UNIQUEIDENTIFIER,
-		[FormaPagamentoId] UNIQUEIDENTIFIER,
-		[StatusCompraId] UNIQUEIDENTIFIER,
+		[FormaPagamento] INT NOT NULL,
+		[Status] INT NOT NULL,
 		[EntregaId] UNIQUEIDENTIFIER,
-		[LancamentoPaiId] UNIQUEIDENTIFIER,
-		[EnderecoId] UNIQUEIDENTIFIER,
-		[GarantiaId] UNIQUEIDENTIFIER,
-		[TelefoneId] UNIQUEIDENTIFIER,
-		[VendedorId] UNIQUEIDENTIFIER,
-		[IsPago] BIT NOT NULL,
-		[IsEntregue] BIT NOT NULL,
-		[IsAvaliado] BIT NOT NULL,
+		[LancamentoPaiId] UNIQUEIDENTIFIER NOT NULL,
+		[GarantiaId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] BIT NOT NULL,
-		CONSTRAINT [FK_Compras_ProdutoId] FOREIGN KEY([ProdutoId])
-		REFERENCES [dbo].[Produtos] ([ProdutoId]),
 		CONSTRAINT [FK_Compras_CompradorId] FOREIGN KEY([CompradorId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-		CONSTRAINT [FK_Compras_FormaPagamentoId] FOREIGN KEY([FormaPagamentoId])
-		REFERENCES [dbo].[FormasPagamentos] ([FormaPagamentoId]),
-		CONSTRAINT [FK_Compras_StatusCompraId] FOREIGN KEY([StatusCompraId])
-		REFERENCES [dbo].[Situacoes] ([SituacaoId]),
 		CONSTRAINT [FK_Compras_EntregaId] FOREIGN KEY([EntregaId])
 		REFERENCES [dbo].[Entregas] ([EntregaId]),
 		CONSTRAINT [FK_Compras_LancamentoPaiId] FOREIGN KEY([LancamentoPaiId])
 		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
-		CONSTRAINT [FK_Compras_EnderecoId] FOREIGN KEY([EnderecoId])
-		REFERENCES [dbo].[Enderecos] ([EnderecoId]),
 		CONSTRAINT [FK_Compras_GarantiaId] FOREIGN KEY([GarantiaId])
 		REFERENCES [dbo].[Garantias] ([GarantiaId])
   	)
@@ -960,30 +858,20 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE SCHEMA log
-
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 -- -----------------------------------------------------
--- Table [log].[Logs]
+-- Table [dbo].[ComprasProdutos]
 -- -----------------------------------------------------
-IF OBJECT_ID('[log].[Logs]') IS NULL
+IF OBJECT_ID('[dbo].[ComprasProdutos]') IS NULL
 BEGIN
-	CREATE TABLE [log].[Logs] (
-		[LogId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[Message] VARCHAR(MAX) NOT NULL,
-		[Request] VARCHAR(150) NOT NULL,
-		[Method] VARCHAR(10) NOT NULL,
-		[Response] INT,
-		[UserAddedId] UNIQUEIDENTIFIER,
-		[DateAdded] [datetime] NOT NULL
-		CONSTRAINT [FK_Logs_UserAddedId] FOREIGN KEY([UserAddedId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId]),
-  	)
+	CREATE TABLE [dbo].[ComprasProdutos] (
+		[CompraProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+		[CompraId] UNIQUEIDENTIFIER,
+		[ProdutoId] UNIQUEIDENTIFIER,
+		CONSTRAINT [FK_ComprasProdutos_CompraId] FOREIGN KEY([CompraId])
+		REFERENCES [dbo].[Compras] ([CompraId]),
+		CONSTRAINT [FK_ComprasProdutos_ProdutoId] FOREIGN KEY([ProdutoId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId])
+	)
 END
 GO
 SET ANSI_NULLS ON
@@ -992,19 +880,25 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [log].[Logs]
+-- Table [dbo].[Avaliacoes]
 -- -----------------------------------------------------
-IF OBJECT_ID('[log].[Logs]') IS NULL
+IF OBJECT_ID('[dbo].[Avaliacoes]') IS NULL
 BEGIN
-	CREATE TABLE [log].[Logs] (
-		[LogId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[Message] VARCHAR(MAX) NOT NULL,
-		[Request] VARCHAR(150) NOT NULL,
-		[Method] VARCHAR(10) NOT NULL,
-		[Response] INT,
-		[UserAddedId] UNIQUEIDENTIFIER,
-		[DateAdded] [datetime] NOT NULL
-		CONSTRAINT [FK_Logs_UserAddedId] FOREIGN KEY([UserAddedId])
+	CREATE TABLE [dbo].[Avaliacoes] (
+  		[AvaliacaoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+		[CompraId] UNIQUEIDENTIFIER,
+		[ItemId] UNIQUEIDENTIFIER,
+    	[Comentario] VARCHAR(MAX) NOT NULL,
+		[Valor] DECIMAL(2, 2) NOT NULL,
+		[AvaliadorId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
+		[Ativo] [bit] NOT NULL,
+		CONSTRAINT [FK_Avaliacoes_CompraId] FOREIGN KEY([CompraId])
+		REFERENCES [dbo].[Produtos] ([ProdutoId]),
+		CONSTRAINT [FK_Avaliacoes_AvaliadorId] FOREIGN KEY([AvaliadorId])
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
   	)
 END
@@ -1384,41 +1278,44 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Procedure [log].[LogsPaginated]
+-- Procedure [dbo].[ReturnPurchasePaginated]
 -- -----------------------------------------------------
 
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
-	-- CREATED BY ALESSANDRO 08/05/2021
-	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
-	CREATE PROCEDURE [log].[LogsPaginated]
-		@Param VARCHAR(MAX),
-		@DateAdded DATETIME,
+	-- CREATED BY ALESSANDRO 08/05/2024
+	-- THIS PROCEDURE RETURNS TABLE COMPRAS PAGINATED
+	CREATE PROCEDURE [dbo].[ReturnPurchasePaginated]
+		@CompraId UNIQUEIDENTIFIER,
+		@CompradorId UNIQUEIDENTIFIER,
+		@CodigoCompra VARCHAR(30),
+		@Status BIT,
+		@Ativo BIT,
 		@PageNumber INT,
 		@RowspPage INT
 	AS
 		BEGIN
 			-- ATRIB TESTE PROC
-			-- SET @DateAdded = NULL
-			-- SET @Param = 'POST'
-			-- SET @PageNumber = 1
+			-- SET @PageNumber = 2
 			-- SET @RowspPage = 5
+
 			SELECT
-				[LogId]
-				,[Message]
-				,[Request]
-				,[Method]
-				,[Response]
-				,[UserAddedId]
-				,[DateAdded]
-			FROM 		[log].[Logs]
-			WHERE 
-					(LOWER(CONVERT(VARCHAR(50), [LogId])) = LOWER(CONVERT(VARCHAR(50), @Param))			OR		@Param IS NULL)
-			OR 		(LOWER([Message])	LIKE	'%'	+LOWER(@Param)+ '%'									OR		@Param IS NULL)
-			OR 		(LOWER([Method])	LIKE	'%'	+LOWER(@Param)+ '%'									OR		@Param IS NULL)
-			OR 		(LOWER([Request])	LIKE	'%'	+LOWER(@Param)+ '%'									OR		@Param IS NULL)
-			OR 		(LOWER(CONVERT(VARCHAR(50), [Response])) = LOWER(CONVERT(VARCHAR(50), @Param))		OR		@Param IS NULL)
-			OR 		(LOWER(CONVERT(VARCHAR(50), [UserAddedId])) = LOWER(CONVERT(VARCHAR(50), @Param))	OR		@Param IS NULL)
-			AND		([DateAdded] >= @DateAdded															OR		@DateAdded IS NULL)
+	  			[CompraId]
+  			    ,[CodigoCompra]
+  			    ,[CodigoPagamento]
+  			    ,[Contador]
+  			    ,[CompradorId]
+  			    ,[FormaPagamento]
+  			    ,[Status]
+  			    ,[EntregaId]
+  			    ,[LancamentoPaiId]
+  			    ,[GarantiaId]
+  			    ,[UsuarioInclusaoId]
+  			    ,[UsuarioUltimaAlteracaoId]
+  			    ,[DataInclusao]
+  			    ,[DataUltimaAlteracao]
+  			    ,[Ativo]
+  			FROM [APDBDev].[dbo].[Compras]
+			WHERE [UsuarioId] = @UserId 
 			ORDER BY	1 DESC
 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
 			FETCH NEXT	@RowspPage ROWS ONLY;
@@ -1428,6 +1325,52 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
+-- -- -----------------------------------------------------
+-- -- Procedure [log].[LogsPaginated]
+-- -- -----------------------------------------------------
+-- 
+-- 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+-- 	-- CREATED BY ALESSANDRO 08/05/2021
+-- 	-- THIS PROCEDURE RETURNS TABLE TIPOS TELEFONED PAGINATED
+-- 	CREATE PROCEDURE [log].[LogsPaginated]
+-- 		@Param VARCHAR(MAX),
+-- 		@DateAdded DATETIME,
+-- 		@PageNumber INT,
+-- 		@RowspPage INT
+-- 	AS
+-- 		BEGIN
+-- 			-- ATRIB TESTE PROC
+-- 			-- SET @DateAdded = NULL
+-- 			-- SET @Param = 'POST'
+-- 			-- SET @PageNumber = 1
+-- 			-- SET @RowspPage = 5
+-- 			SELECT
+-- 				[LogId]
+-- 				,[Message]
+-- 				,[Request]
+-- 				,[Method]
+-- 				,[Response]
+-- 				,[UserAddedId]
+-- 				,[DateAdded]
+-- 			FROM 		[log].[Logs]
+-- 			WHERE 
+-- 					(LOWER(CONVERT(VARCHAR(50), [LogId])) = LOWER(CONVERT(VARCHAR(50), @Param))			OR		@Param IS NULL)
+-- 			OR 		(LOWER([Message])	LIKE	'%'	+LOWER(@Param)+ '%'									OR		@Param IS NULL)
+-- 			OR 		(LOWER([Method])	LIKE	'%'	+LOWER(@Param)+ '%'									OR		@Param IS NULL)
+-- 			OR 		(LOWER([Request])	LIKE	'%'	+LOWER(@Param)+ '%'									OR		@Param IS NULL)
+-- 			OR 		(LOWER(CONVERT(VARCHAR(50), [Response])) = LOWER(CONVERT(VARCHAR(50), @Param))		OR		@Param IS NULL)
+-- 			OR 		(LOWER(CONVERT(VARCHAR(50), [UserAddedId])) = LOWER(CONVERT(VARCHAR(50), @Param))	OR		@Param IS NULL)
+-- 			AND		([DateAdded] >= @DateAdded															OR		@DateAdded IS NULL)
+-- 			ORDER BY	1 DESC
+-- 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
+-- 			FETCH NEXT	@RowspPage ROWS ONLY;
+-- 		END
+-- GO
+-- SET ANSI_NULLS ON
+-- GO
+-- SET QUOTED_IDENTIFIER ON
+-- GO
 
 -- -----------------------------------------------------
 -- Procedure [seg].[UsuariosPaginated]
@@ -1812,3 +1755,23 @@ INSERT INTO APDBDev.dbo.BloqueiosItens
 (BloqueioItemId, BloqueioId, ItemId)
 VALUES
 (NEWID(), '7629714d-ffed-4298-adf5-417c9b703ff6', 'd10424c6-200d-4a3f-9451-7c3f7c88304d');
+
+-- ADDING MERCADO PAGO GARANTIAS
+INSERT INTO APDBDev.dbo.Garantias
+(GarantiaId, TipoGarantia, Descricao, Detalhes, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('4884f1f5-e119-49e6-a394-b3289a2bf539', 1, 'Compra Garantida', 'É um programa que garante o reembolso do dinheiro no caso de alguma contingência ao receber a compra', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+
+-- ADDING MERCADO PAGO LANCAMENTO TESTE
+INSERT INTO APDBDev.dbo.Lancamentos
+(LancamentoId, TipoLancamento, [Status], Referencia, ValorLancamento, DataBaixa, Observacao, UsuarioIdBaixa, LancamentoIdPai, QtdeParcelas, NmrParcela, ValorParcela, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('42f442b0-7cc4-4e0c-b693-e594ea3a1728', 2, 9999999, 'Lançamento mercado pago teste', 10.00, GETDATE(), 'Lançamento mercado pago teste', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 10.00, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+
+-- INSERT ENTREGA EM MAOS
+INSERT INTO APDBDev.dbo.Entregas
+(EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('f5c91ff9-075d-4723-baac-a1cb8e7e41b2', 0, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+
+-- INSERT PURCHASE PENDING TEST
+INSERT INTO APDBDev.dbo.Compras
+(CompraId, CodigoCompra, CodigoPagamento, CompradorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', '1318687938', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
