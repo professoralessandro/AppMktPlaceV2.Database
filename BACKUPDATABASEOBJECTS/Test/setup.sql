@@ -87,7 +87,7 @@ BEGIN
 		[UsuarioId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[GrupoUsaruiId] UNIQUEIDENTIFIER,
 		[Login] [varchar](50) NOT NULL,
-		[NmrDocumento] VARCHAR(50) NOT NULL,
+		[NmrDocumento] VARCHAR(30) NOT NULL,
 		[TipoDocumentoId] INT,
 		[Senha] [varchar](max) NOT NULL,
 		[Nome] [varchar](100) NOT NULL,
@@ -829,9 +829,10 @@ BEGIN
 	CREATE TABLE [dbo].[Compras] (
   		[CompraId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[CodigoCompra] VARCHAR(30) NULL,
-		[CodigoPagamento] VARCHAR(20) NULL,
+		[CodigoPagamento] VARCHAR(30) NULL,
 		[Contador] INT IDENTITY(1,1) NOT NULL,
-  		[CompradorId] UNIQUEIDENTIFIER,
+  		[CompradorId] UNIQUEIDENTIFIER NOT NULL,
+		[VendedorId] UNIQUEIDENTIFIER NOT NULL,
 		[FormaPagamento] INT NOT NULL,
 		[Status] INT NOT NULL,
 		[EntregaId] UNIQUEIDENTIFIER,
@@ -865,8 +866,9 @@ IF OBJECT_ID('[dbo].[ComprasProdutos]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[ComprasProdutos] (
 		[CompraProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[CompraId] UNIQUEIDENTIFIER,
-		[ProdutoId] UNIQUEIDENTIFIER,
+		[CompraId] UNIQUEIDENTIFIER NOT NULL,
+		[Quantidade] INT NOT NULL,
+		[ProdutoId] UNIQUEIDENTIFIER NOT NULL,
 		CONSTRAINT [FK_ComprasProdutos_CompraId] FOREIGN KEY([CompraId])
 		REFERENCES [dbo].[Compras] ([CompraId]),
 		CONSTRAINT [FK_ComprasProdutos_ProdutoId] FOREIGN KEY([ProdutoId])
@@ -1032,6 +1034,7 @@ GO
 	-- THIS PROCEDURE RETURNS TABLE PRODUTOS FOR STORE PAGINATED
 	CREATE PROCEDURE [dbo].[StoreProductPaginated]
 		@Param VARCHAR(MAX),
+		@ProductId UNIQUEIDENTIFIER,
 		@PageNumber INT,
 		@RowspPage INT
 	AS
@@ -1066,11 +1069,15 @@ GO
 				FROM [APDBDev].[dbo].[Produtos] [Prd]
 				LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg] ON [PrdImg].[ProdutoId] = [Prd].[ProdutoId]
 				LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
-				WHERE 		(LOWER(CONVERT(VARCHAR(50),[Prd].[ProdutoId]))			  =			LOWER(CONVERT(VARCHAR(50),@Param))					OR	@Param IS NULL)
-				OR 			([Prd].[Titulo]											LIKE 		'%' + @Param + '%'									OR	@Param IS NULL)
-				OR 			([Prd].[Marca]											LIKE 		'%' + @Param + '%'									OR	@Param IS NULL)
-				OR 			([Prd].[CodigoBarras] 									LIKE 		'%' + @Param + '%'									OR	@Param IS NULL)
-				OR			(LOWER(CONVERT(VARCHAR(50),[Prd].[PrecoVenda]))            =		LOWER(CONVERT(VARCHAR(50),@Param))  				OR	@Param IS NULL)
+				WHERE
+				([Prd].[ProdutoId]										 =									@ProductId										OR	@ProductId IS NULL)
+				AND
+				(
+							(UPPER([Prd].[Titulo])						LIKE 		UPPER(CONCAT('%',@Param,'%'))						OR	@Param IS NULL)
+				OR 			(UPPER([Prd].[Marca])						LIKE 		UPPER(CONCAT('%',@Param,'%'))						OR	@Param IS NULL)
+				OR 			(UPPER([Prd].[CodigoBarras]) 				LIKE 		UPPER(CONCAT('%',@Param,'%'))						OR	@Param IS NULL)
+				OR			(CONVERT(VARCHAR(50),[Prd].[PrecoVenda])	=			CONVERT(VARCHAR(50),@Param)  						OR	@Param IS NULL)
+				)
 				AND [Prd].[Ativo] = 1
 				AND [Prd].[Bloqueado] = 0
 				ORDER BY [Prd].[Relevance] DESC, [Prd].[Score] DESC, [Prd].[DataInclusao] DESC, [Prd].[DataUltimaAlteracao] DESC
@@ -1297,28 +1304,140 @@ GO
 			-- ATRIB TESTE PROC
 			-- SET @PageNumber = 2
 			-- SET @RowspPage = 5
-
 			SELECT
-	  			[CompraId]
-  			    ,[CodigoCompra]
-  			    ,[CodigoPagamento]
-  			    ,[Contador]
-  			    ,[CompradorId]
-  			    ,[FormaPagamento]
-  			    ,[Status]
-  			    ,[EntregaId]
-  			    ,[LancamentoPaiId]
-  			    ,[GarantiaId]
-  			    ,[UsuarioInclusaoId]
-  			    ,[UsuarioUltimaAlteracaoId]
-  			    ,[DataInclusao]
-  			    ,[DataUltimaAlteracao]
-  			    ,[Ativo]
-  			FROM [APDBDev].[dbo].[Compras]
-			WHERE [UsuarioId] = @UserId 
-			ORDER BY	1 DESC
-			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
-			FETCH NEXT	@RowspPage ROWS ONLY;
+				[T].[Identifier]
+  			    ,[T].[CodigoCompra]
+  			    ,[T].[CodigoPagamento]
+  			    ,[T].[Contador]
+  			    ,[T].[CompradorId]
+  			    ,[T].[PaymentFormType]
+  			    ,[T].[StatusPurchase]								
+  			    ,[T].[EntregaId]
+  			    ,[T].[LancamentoPaiId]
+  			    ,[T].[GarantiaId]
+  			    ,[T].[UsuarioInclusaoId]
+  			    ,[T].[UsuarioUltimaAlteracaoId]
+  			    ,[T].[DataInclusao]
+  			    ,[T].[DataUltimaAlteracao]
+  			    ,[T].[Ativo]
+			FROM (
+				SELECT
+	  				[CompraId]										 	AS [Identifier]
+					,[dbo].[FNCReturnIsItemcked]([CompraId]) 			AS [Blocked]
+  				    ,[CodigoCompra]
+  				    ,[CodigoPagamento]
+  				    ,[Contador]
+  				    ,[CompradorId]
+  				    ,[FormaPagamento]									AS [PaymentFormType]
+  				    ,[Status]											AS [StatusPurchase]							
+  				    ,[EntregaId]
+  				    ,[LancamentoPaiId]
+  				    ,[GarantiaId]
+  				    ,[UsuarioInclusaoId]
+  				    ,[UsuarioUltimaAlteracaoId]
+  				    ,[DataInclusao]
+  				    ,[DataUltimaAlteracao]
+  				    ,[Ativo]
+  				FROM [APDBDev].[dbo].[Compras]
+				WHERE 	([CompraId]			=		  		@CompraId						OR	@CompraId 				IS NULL)
+				AND		([CompradorId]		=		  		@CompradorId					OR	@CompradorId 			IS NULL)
+				AND		([CodigoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([CodigoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([Status] 			= 				@Status 						OR	@Status 				IS NULL)
+				AND		([Ativo] 			= 				@Ativo 							OR	@Ativo 					IS NULL)
+				ORDER BY	1 DESC
+				OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
+				FETCH NEXT	@RowspPage ROWS ONLY
+			) AS T
+			WHERE [T].[Blocked] = 0;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Procedure [dbo].[ReturnPurchasePendingProcess]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2024
+	-- THIS PROCEDURE RETURNS TABLE COMPRAS PAGINATED
+	CREATE PROCEDURE [dbo].[ReturnPurchasePendingProcess]
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @PageNumber = 2
+			-- SET @RowspPage = 5
+			SELECT
+				[T].[Identifier]
+  			    ,[T].[CodigoCompra]
+  			    ,[T].[CodigoPagamento]
+  			    ,[T].[Contador]
+  			    ,[T].[CompradorId]
+  			    ,[T].[PaymentFormType]
+  			    ,[T].[StatusPurchase]								
+  			    ,[T].[EntregaId]
+  			    ,[T].[LancamentoPaiId]
+  			    ,[T].[GarantiaId]
+  			    ,[T].[UsuarioInclusaoId]
+  			    ,[T].[UsuarioUltimaAlteracaoId]
+  			    ,[T].[DataInclusao]
+  			    ,[T].[DataUltimaAlteracao]
+  			    ,[T].[Ativo]
+			FROM (
+				SELECT
+	  				[CompraId]										 	AS [Identifier]
+					,[dbo].[FNCReturnIsItemcked]([CompraId]) 			AS [Blocked]
+  				    ,[CodigoCompra]
+  				    ,[CodigoPagamento]
+  				    ,[Contador]
+  				    ,[CompradorId]
+  				    ,[FormaPagamento]									AS [PaymentFormType]
+  				    ,[Status]											AS [StatusPurchase]							
+  				    ,[EntregaId]
+  				    ,[LancamentoPaiId]
+  				    ,[GarantiaId]
+  				    ,[UsuarioInclusaoId]
+  				    ,[UsuarioUltimaAlteracaoId]
+  				    ,[DataInclusao]
+  				    ,[DataUltimaAlteracao]
+  				    ,[Ativo]
+  				FROM [APDBDev].[dbo].[Compras]
+				WHERE
+						[Status] 			= 				0
+				OR		[Status] 			= 				2
+				OR		[Status] 			= 				3
+				AND		[Ativo] 			= 				1
+			) AS T
+			WHERE [T].[Blocked] = 0
+			ORDER BY [T].[DataInclusao] DESC;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
+-- Procedure [dbo].[ReturnShopCartPurchaseByPurchaseId]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 08/05/2024
+	-- THIS PROCEDURE RETURNS TABLE COMPRAS PAGINATED
+	CREATE PROCEDURE [dbo].[ReturnShopCartPurchaseByPurchaseId]
+	@PurchaseId UNIQUEIDENTIFIER
+	AS
+		BEGIN
+			SELECT
+				[CompraProdutoId]		AS Identifier
+      			,[CompraId]
+      			,[Quantidade]
+      			,[ProdutoId]
+  			FROM [APDBDev].[dbo].[ComprasProdutos]
+			WHERE [CompraId] = @PurchaseId
 		END
 GO
 SET ANSI_NULLS ON
@@ -1508,7 +1627,8 @@ GO
 
 INSERT INTO [seg].[Grupos] ([GrupoId], [Descricao], [DataInclusao], [DataUltimaAlteracao], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [Ativo])
 VALUES('59647e61-db07-4b43-993d-3f7eda18fe7f', 'System', GETDATE(), GETDATE(), '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 1),
-('cb4ba730-222c-4b05-bb56-c2fec255bd9d', 'Master', GETDATE(), GETDATE(), '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 1)
+('cb4ba730-222c-4b05-bb56-c2fec255bd9d', 'Master', GETDATE(), GETDATE(), '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 1),
+('5877361c-6f05-41f6-a60d-7c7daa0feb64', 'User', GETDATE(), GETDATE(), '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 1)
 GO
 SET ANSI_NULLS ON
 GO
@@ -1739,7 +1859,8 @@ VALUES
 ('68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 1, 'Av Guaruja', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
 ('d10424c6-200d-4a3f-9451-7c3f7c88304d', 1, 'TESTE BLOQUEIO 1', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
 ('17b8af41-3634-47e5-8d50-6f4b2a7b2e4f', 1, 'TESTE BLOQUEIO 2', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
-('3e9c33e1-7afd-4e2d-a2a3-c24d4102c1b6', 1, 'Av Guaruja Teste END sem USER', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1);
+('3e9c33e1-7afd-4e2d-a2a3-c24d4102c1b6', 1, 'Av Guaruja Teste END sem USER', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
+('75eea234-45aa-431c-b765-c737fc8c778e', 1, 'Test end purchaser faria lima', '90', 'APTO 10', 'Faria Lima', 'Sao Paulo', 'SP', '01451000', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1);
 
 -- ADDING USER TO ADRESS
 INSERT INTO APDBDev.dbo.EnderecosUsuarios
@@ -1771,7 +1892,39 @@ INSERT INTO APDBDev.dbo.Entregas
 (EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
 VALUES('f5c91ff9-075d-4723-baac-a1cb8e7e41b2', 0, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
 
+-- INSERT ENTREGA LOJA MTK PLACE
+INSERT INTO APDBDev.dbo.Entregas
+(EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('86c9efc9-9812-442d-a8b5-8fed62a3f35c', 6, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+
+-- INSERT ENTREGA EM TERCEIRO
+INSERT INTO APDBDev.dbo.Entregas
+(EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('48d51e3a-6f27-4916-94b9-e9ad53c9e8bb', 6, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+
 -- INSERT PURCHASE PENDING TEST
 INSERT INTO APDBDev.dbo.Compras
-(CompraId, CodigoCompra, CodigoPagamento, CompradorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', '1318687938', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+(CompraId, CodigoCompra, CodigoPagamento, CompradorId, VendedorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES
+('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', '1318687938', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1),
+('2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '123456', '123456', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+
+-- COMPRA PRODUTOS RELACIONADOS
+INSERT INTO APDBDev.dbo.ComprasProdutos
+(CompraProdutoId, CompraId, ProdutoId, Quantidade)
+VALUES
+('d01943d9-e459-4b21-841a-68c37f3a6e3e', '1a7f3db4-e82b-4ff9-98a7-68559b88f19b', 'df0d97a9-922e-41ab-8619-1782d45d2585', 2),
+('d01943d9-e459-4b21-841b-61c37f3a6130', '1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '53581e36-5f3d-4752-bba7-d1626c81729a', 1),
+('d01943d9-e459-4b21-841a-68c37f3a6e31', '2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', 'df0d97a9-922e-41ab-8619-1782d45d2585', 3),
+('d01943d9-e459-4b21-841b-61c37f3a6132', '2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '53581e36-5f3d-4752-bba7-d1626c81729a', 4)
+;
+
+-- COMPRADOR TESTE
+INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
+VALUES ('e0d83b70-39f3-4909-ad74-d44208520029', 'purchaser', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test', GETDATE(), 'N', 'N', 'purchaser@appmkt.com.br', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
+
+-- ADDING USER TO ADRESS
+INSERT INTO APDBDev.dbo.EnderecosUsuarios
+(EnderecoUsuarioId, EnderecoId, UsuarioId)
+VALUES
+(NEWID(), '75eea234-45aa-431c-b765-c737fc8c778e', 'e0d83b70-39f3-4909-ad74-d44208520029');
