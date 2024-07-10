@@ -232,8 +232,8 @@ BEGIN
 		[QuantidadeCritica] INT NULL,
 		[PrecoCusto] DECIMAL(10,2) NOT NULL,
 		[PrecoVenda] DECIMAL(10,2) NOT NULL,
-		[Score] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
-        [Relevance] DECIMAL(3,2) DEFAULT 0.00 NOT NULL,
+		[Score] DECIMAL(3,2) DEFAULT 2.00 NOT NULL,
+        [Relevance] DECIMAL(3,2) DEFAULT 2.00 NOT NULL,
 		[Peso] INT NULL,
 		[Altura] INT NULL,
 		[Largura] INT NULL,
@@ -470,7 +470,7 @@ IF OBJECT_ID('[dbo].[Enderecos]') IS NULL
 BEGIN
 	CREATE TABLE [dbo].[Enderecos] (
   		[EnderecoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[TipoEnderecoId] UNIQUEIDENTIFIER,
+		[TipoEnderecoId] INT,
 		[Logradouro] VARCHAR(50) NOT NULL,
 		[Numero] VARCHAR(10) NOT NULL,
 		[Complemento] VARCHAR(10) NULL,
@@ -732,6 +732,7 @@ BEGIN
 		[DataFim] [datetime] NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NULL,
+		[Detalhes] VARCHAR(MAX) NOT NULL,
 		[Ativo] [bit] NOT NULL
 	)
 END
@@ -754,27 +755,6 @@ BEGIN
 		[ItemId] UNIQUEIDENTIFIER NOT NULL,
 		CONSTRAINT [FK_BloqueiosItens_BloqueioId] FOREIGN KEY([BloqueioId])
 		REFERENCES [dbo].[Bloqueios] ([BloqueioId])
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
--- Table [dbo].[BloqueiosUsuarios]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[BloqueiosUsuarios]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[BloqueiosUsuarios] (
-  		[AvaliacaoProdutoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-		[BloqueioId] UNIQUEIDENTIFIER,
-		[UsuarioId] UNIQUEIDENTIFIER,
-		CONSTRAINT [FK_BloqueiosUsuarios_BloqueioId] FOREIGN KEY([BloqueioId])
-		REFERENCES [dbo].[Bloqueios] ([BloqueioId]),
-		CONSTRAINT [FK_BloqueiosUsuarios_ProdutoId] FOREIGN KEY([UsuarioId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
   	)
 END
 GO
@@ -1211,6 +1191,92 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
+-- Procedure [dbo].[AdressPaginated]
+-- -----------------------------------------------------
+
+	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
+	-- CREATED BY ALESSANDRO 05/17/2024
+	-- THIS PROCEDURE RETURNS TABLE ADRESS FOR STORE PAGINATED THAT HAS NOT BLOCKED
+	-- TODO: ATRIBUTE @Usuario NOT WORKING, TECNICAL DEBIT
+	CREATE PROCEDURE [dbo].[AdressPaginated]
+		@Id UNIQUEIDENTIFIER,
+		@UserId UNIQUEIDENTIFIER,
+		@Usuario VARCHAR(250),
+		@TipoEndereco INT,
+		@Logradouro VARCHAR(50),
+		@IsPrincipal BIT,
+		@Ativo BIT,
+		@PageNumber INT,
+		@RowspPage INT
+	AS
+		BEGIN
+			-- ATRIB TESTE PROC
+			-- SET @PageNumber = 2
+			-- SET @RowspPage = 5
+			SELECT
+				[T].[Identifier]
+      			,[T].[AddressTypeEnum]
+				,[T].[UsuarioId]
+      			,[T].[Logradouro]
+      			,[T].[Numero]
+      			,[T].[Complemento]
+      			,[T].[Bairro]
+      			,[T].[Cidade]
+      			,[T].[Estado]
+      			,[T].[CEP]
+      			,[T].[PontoReferencia]
+      			,[T].[UsuarioInclusaoId]
+      			,[T].[UsuarioUltimaAlteracaoId]
+      			,[T].[DataInclusao]
+      			,[T].[DataUltimaAlteracao]
+      			,[T].[IsPrincipal]
+      			,[T].[Ativo]
+			FROM (
+				SELECT
+					[end].[EnderecoId]			AS	Identifier
+      				,[end].[TipoEnderecoId]		AS 	AddressTypeEnum
+					,[dbo].[FNCReturnIsItemcked]([end].[EnderecoId]) AS Blocked
+					,[usu].[UsuarioId]
+      				,[end].[Logradouro]
+      				,[end].[Numero]
+      				,[end].[Complemento]
+      				,[end].[Bairro]
+      				,[end].[Cidade]
+      				,[end].[Estado]
+      				,[end].[CEP]
+      				,[end].[PontoReferencia]
+      				,[end].[UsuarioInclusaoId]
+      				,[end].[UsuarioUltimaAlteracaoId]
+      				,[end].[DataInclusao]
+      				,[end].[DataUltimaAlteracao]
+      				,[end].[IsPrincipal]
+      				,[end].[Ativo]
+				FROM [APDBDev].[dbo].[Enderecos] [end]
+				INNER JOIN [APDBDev].[dbo].[EnderecosUsuarios] [endusu]		ON [endusu].[EnderecoId] = [end].[EnderecoId]
+				INNER JOIN [APDBDev].[seg].[Usuarios] [usu] 				ON [usu].[UsuarioId]	 = [endusu].[UsuarioId]
+				WHERE 		([end].[EnderecoId]		=		  		@Id					OR	@Id 			IS NULL)
+				AND 		([usu].[UsuarioId]		=		  		@UserId				OR	@UserId 		IS NULL)
+				AND			([usu].[Login]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[NmrDocumento]	LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[Nome]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([usu].[Email]			LIKE 	'%' +@Usuario+ '%'			OR	@Usuario 		IS NULL)
+				AND 		([end].[TipoEnderecoId]	 =		  	@TipoEndereco			OR	@TipoEndereco	IS NULL)
+				AND 		([end].[Logradouro]		LIKE 	'%' +@Logradouro+ '%'		OR	@Usuario 		IS NULL)
+				AND 		([end].[IsPrincipal] 	 =		  	@IsPrincipal			OR	@IsPrincipal 	IS NULL)
+				AND			([end].[Ativo] 			 = 			@Ativo 					OR	@Ativo 			IS NULL)
+				AND [usu].[Bloqueado] = 0
+				ORDER BY [end].[Logradouro] DESC, [end].[DataInclusao] DESC, [end].[DataUltimaAlteracao] DESC
+				OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
+				FETCH NEXT @RowspPage ROWS ONLY) [T]
+			WHERE [T].[Blocked] = 0;
+		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- -----------------------------------------------------
 -- Procedure [seg].[ReturnUsersIsASystemAdmin]
 -- -----------------------------------------------------
 
@@ -1400,8 +1466,8 @@ GO
 -- -----------------------------------------------------
 
 INSERT INTO APDBDev.dbo.Produtos
-(ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
-VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, N'PRODUTO TESTE 1', N'PRODUTO TESTE 1', N'PRODUTO TESTE 1 BREVE', N'', N'', 0, 0, 0, 50.01, 65.01, 0.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
+(ProdutoId, TipoProdutoId, Titulo, Detalhes, ResumoDetalhes, CodigoBarras, Marca, Quantidade, IsIlimitado, QuantidadeCritica, PrecoCusto, PrecoVenda, Score, Relevance, Peso, Altura, Largura, Comprimento, Bloqueado, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInclusao, DataUltimaAlteracao, Ativo)
+VALUES(N'BB27FD71-648F-4F70-E4A4-08DC7681957E', 0, 'Cesta de chocolates personalizada', 'Cesta de chocolates personalizada', 'Cesta de chocolates personalizada com diversos chocolates, chocotone.', N'', N'', 120, 0, 10, 150.01, 205.50, 4.90, 4.95, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1);
 
 -- -----------------------------------------------------
 -- Feed table [dbo].[Imagens]
