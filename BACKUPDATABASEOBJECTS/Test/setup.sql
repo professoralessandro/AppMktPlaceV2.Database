@@ -456,22 +456,21 @@ BEGIN
 		[LancamentoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[TipoLancamento] INT NOT NULL,
 		[Status] INT NOT NULL,
-		[Referencia] VARCHAR(50) NOT NULL,
+		[Referencia] VARCHAR(50) NULL,
+		[NroAutorizacao] VARCHAR(50) NULL,
 		[ValorLancamento] DECIMAL(10, 2) NOT NULL,
 		[DataBaixa] [datetime] NULL,
 		[Observacao] [varchar](max) NULL,
 		[UsuarioIdBaixa] UNIQUEIDENTIFIER NULL,
 		[LancamentoIdPai] UNIQUEIDENTIFIER NULL,
-		[QtdeParcelas] [int] NOT NULL,
-		[NmrParcela] [int] NOT NULL,
-		[ValorParcela] DECIMAL(10, 2) NULL,
+		[QtdeParcelas] [int] NULL,
+		[NmrParcela] [int] NULL,
+		[ValorParcela] DECIMAL(10,2) NULL,
 		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
 		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NULL,
-		[Ativo] [bit] NOT NULL,
-		CONSTRAINT [FK_Lancamentos_UsuarioInclusaoId] FOREIGN KEY([UsuarioInclusaoId])
-		REFERENCES [seg].[Usuarios] ([UsuarioId])
+		[Ativo] [bit] NOT NULL
 	)
 END
 GO
@@ -607,7 +606,9 @@ BEGIN
 		[DataPrevistaEntrega] DATETIME NULL,
 		[DataEfetivaEnrega] DATETIME NULL,
 		[Status] INT NOT NULL,
+		[ValorTotal] DECIMAL(10, 2) NOT NULL,
 		[NmrDocumento] VARCHAR(50) NULL,
+		[CodigoRastramento] VARCHAR(30) NULL,
 		[TipoDocumento] INT NULL,
 		[NomeRecebedor] VARCHAR(100) NULL,
 		[IsEntregueTitular] BIT NULL,
@@ -779,31 +780,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Table [dbo].[Pagamentos]
--- -----------------------------------------------------
-IF OBJECT_ID('[dbo].[Pagamentos]') IS NULL
-BEGIN
-	CREATE TABLE [dbo].[Pagamentos] (
-  		[PagamentoId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-  		[LancamentoId] UNIQUEIDENTIFIER,
-		[CodigoPagamento] VARCHAR (30) NULL,
-		[ChagoExterno] VARCHAR (50) NULL,
-		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
-		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
-		[DataInclusao] [datetime] NOT NULL,
-		[DataUltimaAlteracao] [datetime] NULL,
-		[Ativo] [bit] NOT NULL,
-		CONSTRAINT [FK_Pagamentos_LancamentoId] FOREIGN KEY([LancamentoId])
-		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
-  	)
-END
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
--- -----------------------------------------------------
 -- Table [dbo].[ConfiguracoesParametros]
 -- -----------------------------------------------------
 IF OBJECT_ID('[dbo].[ConfiguracoesParametros]') IS NULL
@@ -838,6 +814,7 @@ BEGIN
   		[CompradorId] UNIQUEIDENTIFIER NOT NULL,
 		[FormaPagamento] INT NOT NULL,
 		[Status] INT NOT NULL,
+		[ValorTotal] DECIMAL(10,2) NULL,
 		[EntregaId] UNIQUEIDENTIFIER,
 		[LancamentoPaiId] UNIQUEIDENTIFIER NOT NULL,
 		[GarantiaId] UNIQUEIDENTIFIER NOT NULL,
@@ -1339,7 +1316,6 @@ GO
   				    ,[CodigoCompra]
   				    ,[CodigoExternoCompra]
 					,[LinkExternoPagamento]
-					,[CodigoPagamento]
   				    ,[Contador]
   				    ,[CompradorId]
   				    ,[FormaPagamento]									AS [PaymentFormType]
@@ -1354,12 +1330,12 @@ GO
   				    ,[Ativo]
 					,[CompradorId]										AS [PurchaserId]
   				FROM [APDBDev].[dbo].[Compras]
-				WHERE 	([CompraId]			=		  		@CompraId						OR	@CompraId 				IS NULL)
-				AND		([CompradorId]		=		  		@CompradorId					OR	@CompradorId 			IS NULL)
-				AND		([CodigoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
-				AND		([CodigoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
-				AND		([Status] 			= 				@Status 						OR	@Status 				IS NULL)
-				AND		([Ativo] 			= 				@Ativo 							OR	@Ativo 					IS NULL)
+				WHERE 	([CompraId]					=		  		@CompraId						OR	@CompraId 				IS NULL)
+				AND		([CompradorId]				=		  		@CompradorId					OR	@CompradorId 			IS NULL)
+				AND		([CodigoCompra]				=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([CodigoExternoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([Status] 					= 				@Status 						OR	@Status 				IS NULL)
+				AND		([Ativo] 					= 				@Ativo 							OR	@Ativo 					IS NULL)
 				ORDER BY	1 DESC
 				OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
 				FETCH NEXT	@RowspPage ROWS ONLY
@@ -1373,13 +1349,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- -----------------------------------------------------
--- Procedure [dbo].[ReturnPurchasePendingProcess]
+-- Procedure [dbo].[ReturnPurchaseProcess]
 -- -----------------------------------------------------
 
 	-- CREATING A PAGING WITH OFFSET and FETCH clauses IN "SQL SERVER 2012"
 	-- CREATED BY ALESSANDRO 08/05/2024
 	-- THIS PROCEDURE RETURNS TABLE COMPRAS PAGINATED
-	CREATE PROCEDURE [dbo].[ReturnPurchasePendingProcess]
+	CREATE PROCEDURE [dbo].[ReturnPurchaseProcess]
 	AS
 		BEGIN
 			-- ATRIB TESTE PROC
@@ -1426,6 +1402,7 @@ GO
 						[Status] 			= 				0
 				OR		[Status] 			= 				2
 				OR		[Status] 			= 				3
+				OR		[Status] 			= 				9
 				AND		[Ativo] 			= 				1
 			) AS T
 			WHERE [T].[Blocked] = 0
@@ -1735,7 +1712,7 @@ VALUES
 ('72813eed-6d5d-44d4-97fa-f1807aa729b0', 0, 'Smarth fone galaxy S10 Plus Blocked Permanente 1', 'Smarth fone galaxy S10 Blocked Permanente 1', 'Smarth fone galaxy S10 Blocked Permanente 1 ficha tecnica abreviada', N'', N'', 120, 0, 10, 1150.01, 1550.01, 4.80, 4.80, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
 ('53581e36-5f3d-4752-bba7-d1626c81729a', 0, 'Smarth fone galaxy S10 Plus Blocked Permanente 2', 'Smarth fone galaxy S10 Blocked Permanente 2', 'Smarth fone galaxy S10 Blocked Permanente 2 ficha tecnica abreviada', N'', N'', 120, 0, 10, 1150.01, 1550.01, 4.80, 4.80, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
 ('56b5e909-65ed-4e9b-b3cc-6785200b5dc2', 0, 'Smarth fone galaxy S10 Plus Blocked Permanente 3', 'Smarth fone galaxy S10 Blocked Permanente 3', 'Smarth fone galaxy S10 Blocked Permanente 3 ficha tecnica abreviada', N'', N'', 120, 0, 10, 1150.01, 1550.01, 4.80, 4.80, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
-(NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 120, 0, 10, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
+('9189eaa5-d8c2-44e1-845e-e127e9c484b1', 0, 'Capinha Smarth fone galaxy S10', 'Capinha Smarth fone galaxy S10', 'Capinha Preta Smarth fone galaxy S10 abreviada', N'', N'', 120, 0, 10, 20.01, 25.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
 (NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 120, 0, 10, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
 (NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 120, 0, 10, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
 (NEWID(), 0, 'Smarth fone galaxy S10', 'Smarth fone galaxy S10', 'Smarth fone galaxy S10 ficha tecnica abreviada', N'', N'', 120, 0, 10, 50.01, 65.01, 2.00, 2.00, NULL, NULL, NULL, NULL, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', NULL, GETDATE(), NULL, 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898'),
@@ -1873,7 +1850,7 @@ VALUES
 INSERT INTO APDBDev.dbo.Enderecos
 (EnderecoId, TipoEnderecoId, Logradouro, Numero, Complemento, Bairro, Cidade, Estado, CEP, PontoReferencia, UsuarioInclusaoId, DataInclusao, IsPrincipal, Ativo)
 VALUES
-('68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 1, 'Av Guaruja', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
+('68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 1, 'Desembargador Plinio de Carvalho Pinto', '97', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11442000', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
 ('d10424c6-200d-4a3f-9451-7c3f7c88304d', 1, 'TESTE BLOQUEIO 1', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
 ('17b8af41-3634-47e5-8d50-6f4b2a7b2e4f', 1, 'TESTE BLOQUEIO 2', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
 ('3e9c33e1-7afd-4e2d-a2a3-c24d4102c1b6', 1, 'Av Guaruja Teste END sem USER', '90', 'APTO 10', 'Jardim Enseada', 'Guarujá', 'SP', '11443080', 'Hortifruti Betel', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1, 1),
@@ -1906,25 +1883,25 @@ VALUES('42f442b0-7cc4-4e0c-b693-e594ea3a1728', 2, 9999999, 'Lançamento mercado 
 
 -- INSERT ENTREGA EM MAOS
 INSERT INTO APDBDev.dbo.Entregas
-(EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('f5c91ff9-075d-4723-baac-a1cb8e7e41b2', 0, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+(EntregaId, TipoEntrega, [Status], ValorTotal, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('f5c91ff9-075d-4723-baac-a1cb8e7e41b2', 0, 7, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
 
 -- INSERT ENTREGA LOJA MTK PLACE
 INSERT INTO APDBDev.dbo.Entregas
-(EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('86c9efc9-9812-442d-a8b5-8fed62a3f35c', 6, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+(EntregaId, TipoEntrega, [Status], ValorTotal, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('86c9efc9-9812-442d-a8b5-8fed62a3f35c', 6, 7, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
 
 -- INSERT ENTREGA EM TERCEIRO
 INSERT INTO APDBDev.dbo.Entregas
-(EntregaId, TipoEntrega, [Status], UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('48d51e3a-6f27-4916-94b9-e9ad53c9e8bb', 6, 7, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+(EntregaId, TipoEntrega, [Status], ValorTotal, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('48d51e3a-6f27-4916-94b9-e9ad53c9e8bb', 6, 7, 0, N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
 
 -- INSERT PURCHASE PENDING TEST
 INSERT INTO APDBDev.dbo.Compras
-(CompraId, CodigoCompra, CodigoPagamento, CompradorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo)
+(CompraId, CodigoCompra, CompradorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo)
 VALUES
-('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', '1318687938', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1),
-('2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '123456', '123456', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
+('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1),
+('2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '123456', 'd2a833de-5bb4-4931-a3c2-133c8994072a', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', '4884f1f5-e119-49e6-a394-b3289a2bf539', N'94C1212A-AF9F-49BB-9F21-8AA35103B7C9', GETDATE(), 1);
 
 -- COMPRA PRODUTOS RELACIONADOS
 INSERT INTO APDBDev.dbo.ComprasProdutos
@@ -1938,10 +1915,16 @@ VALUES
 
 -- COMPRADOR TESTE
 INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [Bloqueado], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
-VALUES ('e0d83b70-39f3-4909-ad74-d44208520029', 'purchaser', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test', GETDATE(), 'N', 'N', 'purchaser@appmkt.com.br', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
+VALUES ('e0d83b70-39f3-4909-ad74-d44208520029', 'purchaser', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test', GETDATE(), 'N', 'N', 'purchaser@appmkt.com.br', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
 
 -- ADDING USER TO ADRESS
 INSERT INTO APDBDev.dbo.EnderecosUsuarios
 (EnderecoUsuarioId, EnderecoId, UsuarioId)
 VALUES
 (NEWID(), '75eea234-45aa-431c-b765-c737fc8c778e', 'e0d83b70-39f3-4909-ad74-d44208520029');
+
+-- ADDING USER MASTER ADDRESS
+INSERT INTO APDBDev.dbo.EnderecosUsuarios
+(EnderecoUsuarioId, EnderecoId, UsuarioId)
+VALUES
+(NEWID(), '68a3c26e-6569-4e3e-ac70-fef24ec9f91b', 'd2a833de-5bb4-4931-a3c2-133c8994072a');
