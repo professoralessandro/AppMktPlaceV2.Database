@@ -1402,7 +1402,6 @@ GO
 						[Status] 			= 				0
 				OR		[Status] 			= 				2
 				OR		[Status] 			= 				3
-				OR		[Status] 			= 				9
 				AND		[Ativo] 			= 				1
 			) AS T
 			WHERE [T].[Blocked] = 0
