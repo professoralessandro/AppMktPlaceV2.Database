@@ -458,7 +458,8 @@ BEGIN
 		[Status] INT NOT NULL,
 		[Referencia] VARCHAR(50) NULL,
 		[NroAutorizacao] VARCHAR(50) NULL,
-		[ValorLancamento] DECIMAL(10, 2) NOT NULL,
+		[NroAutorizacao] VARCHAR(50) NULL,
+		[CodExternoAutorizacao] VARCHAR(50) NULL,
 		[DataBaixa] [datetime] NULL,
 		[Observacao] [varchar](max) NULL,
 		[UsuarioIdBaixa] UNIQUEIDENTIFIER NULL,
@@ -814,7 +815,6 @@ BEGIN
   		[CompradorId] UNIQUEIDENTIFIER NOT NULL,
 		[FormaPagamento] INT NOT NULL,
 		[Status] INT NOT NULL,
-		[ValorTotal] DECIMAL(10,2) NULL,
 		[EntregaId] UNIQUEIDENTIFIER,
 		[LancamentoPaiId] UNIQUEIDENTIFIER NOT NULL,
 		[GarantiaId] UNIQUEIDENTIFIER NOT NULL,
@@ -849,6 +849,11 @@ BEGIN
 		[CompraId] UNIQUEIDENTIFIER NOT NULL,
 		[Quantidade] INT NOT NULL,
 		[ProdutoId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
+		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
+		[DataInclusao] [datetime] NOT NULL,
+		[DataUltimaAlteracao] [datetime] NULL,
+		[Ativo] BIT NOT NULL,
 		CONSTRAINT [FK_ComprasProdutos_CompraId] FOREIGN KEY([CompraId])
 		REFERENCES [dbo].[Compras] ([CompraId]),
 		CONSTRAINT [FK_ComprasProdutos_ProdutoId] FOREIGN KEY([ProdutoId])
@@ -1073,6 +1078,7 @@ GO
       			,[Status]
       			,[Referencia]
       			,[NroAutorizacao]
+				,[CodExternoAutorizacao]
       			,[ValorLancamento]
       			,[DataBaixa]
       			,[Observacao]
@@ -1411,33 +1417,34 @@ GO
 				,[T].[PurchaseValue]
 			FROM (
 				SELECT
-	  				[CompraId]										 	AS [Identifier]
-					,[dbo].[FNCReturnIsItemcked]([CompraId]) 			AS [Blocked]
-  				    ,[CodigoCompra]										AS [PurchaseCode]
-  				    ,[CodigoExternoCompra]								AS [ExternalPurchaseCode]
-					,[LinkExternoPagamento]								AS [ExternalPaymentLink]
-  				    ,[Contador]
-  				    ,[CompradorId]
-  				    ,[FormaPagamento]									AS [PaymentFormType]
-  				    ,[Status]											AS [StatusPurchase]							
-  				    ,[EntregaId]
-  				    ,[LancamentoPaiId]
-  				    ,[GarantiaId]
-  				    ,[UsuarioInclusaoId]
-  				    ,[UsuarioUltimaAlteracaoId]
-  				    ,[DataInclusao]
-  				    ,[DataUltimaAlteracao]
-  				    ,[Ativo]
-					,[CompradorId]										AS [PurchaserId]
-					,[ValorTotal]										AS [PurchaseValue]
-  				FROM [APDBDev].[dbo].[Compras]
-				WHERE 	([CompraId]					=		  		@CompraId						OR	@CompraId 				IS NULL)
-				AND		([CompradorId]				=		  		@CompradorId					OR	@CompradorId 			IS NULL)
-				AND		([EntregaId]				=		  		@EntregaId						OR	@EntregaId 				IS NULL)
-				AND		([CodigoCompra]				=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
-				AND		([CodigoExternoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
-				AND		([Status] 					= 				@Status 						OR	@Status 				IS NULL)
-				AND		([Ativo] 					= 				@Ativo 							OR	@Ativo 					IS NULL)
+	  				[cp].[CompraId]										 		AS [Identifier]
+					,[dbo].[FNCReturnIsItemcked]([CompraId]) 					AS [Blocked]
+  				    ,[cp].[CodigoCompra]										AS [PurchaseCode]
+  				    ,[cp].[CodigoExternoCompra]									AS [ExternalPurchaseCode]
+					,[cp].[LinkExternoPagamento]								AS [ExternalPaymentLink]
+  				    ,[cp].[Contador]
+  				    ,[cp].[CompradorId]
+  				    ,[cp].[FormaPagamento]										AS [PaymentFormType]
+  				    ,[cp].[Status]												AS [StatusPurchase]							
+  				    ,[cp].[EntregaId]
+  				    ,[cp].[LancamentoPaiId]
+  				    ,[cp].[GarantiaId]
+  				    ,[cp].[UsuarioInclusaoId]
+  				    ,[cp].[UsuarioUltimaAlteracaoId]
+  				    ,[cp].[DataInclusao]
+  				    ,[cp].[DataUltimaAlteracao]
+  				    ,[cp].[Ativo]
+					,[cp].[CompradorId]											AS [PurchaserId]
+					,[lc].[ValorLancamento]										AS [PurchaseValue]
+  				FROM 			[APDBDev].[dbo].[Compras] 		[cp]
+				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
+				WHERE 	([cp].[CompraId]					=		  		@CompraId						OR	@CompraId 				IS NULL)
+				AND		([cp].[CompradorId]				=		  		@CompradorId					OR	@CompradorId 			IS NULL)
+				AND		([cp].[EntregaId]				=		  		@EntregaId						OR	@EntregaId 				IS NULL)
+				AND		([cp].[CodigoCompra]				=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([cp].[CodigoExternoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([cp].[Status] 					= 				@Status 						OR	@Status 				IS NULL)
+				AND		([cp].[Ativo] 					= 				@Ativo 							OR	@Ativo 					IS NULL)
 				ORDER BY	1 DESC
 				OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
 				FETCH NEXT	@RowspPage ROWS ONLY
@@ -1483,30 +1490,31 @@ GO
   			    ,[T].[Ativo]
 			FROM (
 				SELECT
-	  				[CompraId]										 	AS [Identifier]
-					,[dbo].[FNCReturnIsItemcked]([CompraId]) 			AS [Blocked]
-  				    ,[CodigoCompra]										AS [PurchaseCode]
-  				    ,[CodigoExternoCompra]								AS [ExternalPurchaseCode]
-					,[LinkExternoPagamento]								AS [ExternalPaymentLink]
-  				    ,[Contador]
-  				    ,[CompradorId]									    AS [PurchaserId]
-  				    ,[FormaPagamento]									AS [PaymentFormType]
-  				    ,[Status]											AS [StatusPurchase]							
-  				    ,[EntregaId]
-  				    ,[LancamentoPaiId]
-  				    ,[GarantiaId]	
-  				    ,[UsuarioInclusaoId]
-  				    ,[UsuarioUltimaAlteracaoId]
-  				    ,[DataInclusao]
-  				    ,[DataUltimaAlteracao]
-  				    ,[Ativo]
-					,[ValorTotal]										AS [PurchaseValue]
-  				FROM [APDBDev].[dbo].[Compras]
+	  				[cp].[CompraId]										 		AS [Identifier]
+					,[dbo].[FNCReturnIsItemcked]([CompraId]) 					AS [Blocked]
+  				    ,[cp].[CodigoCompra]										AS [PurchaseCode]
+  				    ,[cp].[CodigoExternoCompra]									AS [ExternalPurchaseCode]
+					,[cp].[LinkExternoPagamento]								AS [ExternalPaymentLink]
+  				    ,[cp].[Contador]
+  				    ,[cp].[CompradorId]									    	AS [PurchaserId]
+  				    ,[cp].[FormaPagamento]										AS [PaymentFormType]
+  				    ,[cp].[Status]												AS [StatusPurchase]							
+  				    ,[cp].[EntregaId]
+  				    ,[cp].[LancamentoPaiId]
+  				    ,[cp].[GarantiaId]	
+  				    ,[cp].[UsuarioInclusaoId]
+  				    ,[cp].[UsuarioUltimaAlteracaoId]
+  				    ,[cp].[DataInclusao]
+  				    ,[cp].[DataUltimaAlteracao]
+  				    ,[cp].[Ativo]
+					,[lc].[ValorLancamento]										AS [PurchaseValue]
+  				FROM 			[APDBDev].[dbo].[Compras] 		[cp]
+				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
 				WHERE
-						[Status] 			= 				0
-				OR		[Status] 			= 				2
-				OR		[Status] 			= 				3
-				AND		[Ativo] 			= 				1
+						[cp].[Status] 			= 				0
+				OR		[cp].[Status] 			= 				2
+				OR		[cp].[Status] 			= 				3
+				AND		[cp].[Ativo] 			= 				1
 			) AS T
 			WHERE [T].[Blocked] = 0
 			ORDER BY [T].[DataInclusao] DESC;
@@ -1533,8 +1541,14 @@ GO
       			,[CompraId]
       			,[Quantidade]
       			,[ProdutoId]
+				,[UsuarioInclusaoId]
+		  		,[UsuarioUltimaAlteracaoId]
+		  		,[DataInclusao]
+		  		,[DataUltimaAlteracao]
+		  		,[Ativo]
   			FROM [APDBDev].[dbo].[ComprasProdutos]
 			WHERE [CompraId] = @PurchaseId
+			AND [Ativo] = 1
 		END
 GO
 SET ANSI_NULLS ON
@@ -2019,22 +2033,22 @@ VALUES
 INSERT INTO APDBDev.dbo.Lancamentos
 (LancamentoId, TipoLancamento, [Status], Referencia, ValorLancamento, Observacao, LancamentoIdPai, QtdeParcelas, NmrParcela, ValorParcela, UsuarioInclusaoId, DataInclusao, Ativo)
 VALUES
-('9ba6aba5-0d1f-431d-975c-520b56fb383d', 0, 0, 'Release Credit Approved Test', 60.50, 'Release Credit Approved Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 60.50, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
-('0389e309-5976-486f-aa30-555a4577ccbf', 0, 0, 'Release Credit Pending Test', 3361.98, 'Release Credit Pending Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 3361.98, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+('9ba6aba5-0d1f-431d-975c-520b56fb383d', 2, 0, 'Release Credit Approved Test', 60.50, 'Release Credit Approved Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 60.50, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
+('0389e309-5976-486f-aa30-555a4577ccbf', 2, 0, 'Release Credit Pending Test', 3361.98, 'Release Credit Pending Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 3361.98, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
 
 -- INSERT PURCHASE PENDING TEST
 INSERT INTO APDBDev.dbo.Compras
-(CompraId, CodigoCompra, CompradorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo, ValorTotal)
+(CompraId, CodigoCompra, CompradorId, FormaPagamento, Status, EntregaId, LancamentoPaiId, GarantiaId, UsuarioInclusaoId, DataInclusao, Ativo)
 VALUES
-('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', 'e0d83b70-39f3-4909-ad74-d44208520029', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '9ba6aba5-0d1f-431d-975c-520b56fb383d', '4884f1f5-e119-49e6-a394-b3289a2bf539', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1, 60.50),
-('2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '123456', 'e0d83b70-39f3-4909-ad74-d44208520029', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '0389e309-5976-486f-aa30-555a4577ccbf', '4884f1f5-e119-49e6-a394-b3289a2bf539', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1, 3361.98);
+('1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '1318687938', 'e0d83b70-39f3-4909-ad74-d44208520029', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '9ba6aba5-0d1f-431d-975c-520b56fb383d', '4884f1f5-e119-49e6-a394-b3289a2bf539', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
+('2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '123456', 'e0d83b70-39f3-4909-ad74-d44208520029', 3, 0, 'f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '0389e309-5976-486f-aa30-555a4577ccbf', '4884f1f5-e119-49e6-a394-b3289a2bf539', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
 
 -- COMPRA PRODUTOS RELACIONADOS
 INSERT INTO APDBDev.dbo.ComprasProdutos
-(CompraProdutoId, CompraId, ProdutoId, Quantidade)
+(CompraProdutoId, CompraId, ProdutoId, Quantidade, UsuarioInclusaoId, DataInclusao, Ativo)
 VALUES
-('d01943d9-e459-4b21-841a-68c37f3a6e3e', '1a7f3db4-e82b-4ff9-98a7-68559b88f19b', 'df0d97a9-922e-41ab-8619-1782d45d2585', 2),
-('d01943d9-e459-4b21-841b-61c37f3a6130', '1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '53581e36-5f3d-4752-bba7-d1626c81729a', 1),
-('d01943d9-e459-4b21-841a-68c37f3a6e31', '2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', 'df0d97a9-922e-41ab-8619-1782d45d2585', 3),
-('d01943d9-e459-4b21-841b-61c37f3a6132', '2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '53581e36-5f3d-4752-bba7-d1626c81729a', 4)
+('d01943d9-e459-4b21-841a-68c37f3a6e3e', '1a7f3db4-e82b-4ff9-98a7-68559b88f19b', 'df0d97a9-922e-41ab-8619-1782d45d2585', 2, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
+('d01943d9-e459-4b21-841b-61c37f3a6130', '1a7f3db4-e82b-4ff9-98a7-68559b88f19b', '53581e36-5f3d-4752-bba7-d1626c81729a', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
+('d01943d9-e459-4b21-841a-68c37f3a6e31', '2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', 'df0d97a9-922e-41ab-8619-1782d45d2585', 3, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
+('d01943d9-e459-4b21-841b-61c37f3a6132', '2a7f3db4-e82b-4ff9-98a7-68559b88f1a0', '53581e36-5f3d-4752-bba7-d1626c81729a', 4, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1)
 ;
