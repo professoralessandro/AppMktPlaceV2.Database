@@ -1298,10 +1298,27 @@ GO
 			-- SET @RowspPage = 5
 
 			SELECT
-				[ShoppingCartId]			AS		Identifier
-      			,[UsuarioId]
-      			,[ProdutoId]
- 			FROM [APDBDev].[dbo].[ShoppingCart]
+				[sc].[ShoppingCartId]				AS		[Identifier]
+      			,[sc].[UsuarioId]
+      			,[sc].[ProdutoId]					AS		[ProductId]
+				,[pd].[TipoProdutoId]				AS		[ProductTypeEnum]
+				,[Img].[File]						AS		[MainImage]
+				,[pd].[Titulo]
+				,[pd].[ResumoDetalhes]
+				,[pd].[Detalhes]
+				,[pd].[CodigoBarras]
+				,[pd].[Marca]
+				,[pd].[Quantidade]
+				,[pd].[PrecoVenda]					AS		[Preco]
+				,[pd].[Score]						AS		[Rating]
+				,[sc].[UsuarioInclusaoId]
+				,[sc].[UsuarioUltimaAlteracaoId]
+				,[sc].[DataInclusao]
+				,[sc].[DataUltimaAlteracao]
+ 			FROM [APDBDev].[dbo].[ShoppingCart] [sc]
+			INNER JOIN [APDBDev].[dbo].[Produtos] [pd]				ON	[pd].[ProdutoId]	=	[sc].[ProdutoId]
+			LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg]	ON [PrdImg].[ProdutoId] =	[sc].[ProdutoId]
+			LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
 			WHERE [UsuarioId] = @UserId 
 			ORDER BY	1 DESC
 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
