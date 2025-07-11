@@ -108,7 +108,7 @@ BEGIN
 		[ToolTip] [varchar](255) NULL,
 		[Route] [varchar](max) NULL, -- ANTIGO URL
 		[Menu] [bit] NOT NULL,
-		[RecursoIdPai] [int] UNIQUEIDENTIFIER NULL,
+		[RecursoIdPai] UNIQUEIDENTIFIER NULL,
 		[Ordem] [int] NULL,
 		[Ativo] [bit] NOT NULL,
 		[Type] [varchar](100) NULL,
@@ -445,7 +445,6 @@ BEGIN
 		[Status] INT NOT NULL,
 		[Referencia] VARCHAR(50) NULL,
 		[NroAutorizacao] VARCHAR(50) NULL,
-		[NroAutorizacao] VARCHAR(50) NULL,
 		[CodExternoAutorizacao] VARCHAR(50) NULL,
 		[DataBaixa] [datetime] NULL,
 		[Observacao] [varchar](max) NULL,
@@ -564,6 +563,7 @@ BEGIN
 	CREATE TABLE [dbo].[Mensagens] (
   		[MensagemId] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
 		[RemetenteId] UNIQUEIDENTIFIER,
+		[Assunto] VARCHAR(60) NOT NULL,
 		[MensagemContexto] VARCHAR(MAX) NOT NULL,
 		[TipoMensagemId] INT NOT NULL,
 		[IsHtml] BIT NOT NULL,
@@ -816,7 +816,7 @@ BEGIN
 		REFERENCES [seg].[Usuarios] ([UsuarioId]),
 		CONSTRAINT [FK_Compras_EntregaId] FOREIGN KEY([EntregaId])
 		REFERENCES [dbo].[Entregas] ([EntregaId]),
-		CONSTRAINT [FK_Compras_LancamentoPaiId] FOREIGN KEY([LancamentoPaiId])
+		CONSTRAINT [FK_Compras_LancamentopPaiId] FOREIGN KEY([LancamentoPaiId])
 		REFERENCES [dbo].[Lancamentos] ([LancamentoId]),
 		CONSTRAINT [FK_Compras_GarantiaId] FOREIGN KEY([GarantiaId])
 		REFERENCES [dbo].[Garantias] ([GarantiaId])
@@ -943,7 +943,7 @@ GO
     		SELECT @IsAdmin = CASE 
     		    WHEN EXISTS (
     		        SELECT 1 FROM seg.Usuarios us
-					WHERE us.GrupoId = (SELECT TOP 1 gp.GrupoId FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
+					WHERE us.GrupoUsaruiId = (SELECT TOP 1 gp.GrupoId FROM seg.Grupos gp WHERE gp.Descricao = 'Master')
 					AND us.UsuarioId = @UserId
     		    ) THEN 1 
     		    ELSE 0 
@@ -1062,7 +1062,6 @@ GO
       			,[Referencia]
       			,[NroAutorizacao]
 				,[CodExternoAutorizacao]
-      			,[ValorLancamento]
       			,[DataBaixa]
       			,[Observacao]
       			,[UsuarioIdBaixa]
@@ -1416,7 +1415,7 @@ GO
   				    ,[cp].[DataUltimaAlteracao]
   				    ,[cp].[Ativo]
 					,[cp].[CompradorId]											AS [PurchaserId]
-					,[lc].[ValorLancamento]										AS [PurchaseValue]
+					,[lc].[ValorParcela]										AS [PurchaseValue]
   				FROM 			[APDBDev].[dbo].[Compras] 		[cp]
 				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
 				WHERE 	([cp].[CompraId]					=		  		@CompraId						OR	@CompraId 				IS NULL)
@@ -1488,7 +1487,7 @@ GO
   				    ,[cp].[DataInclusao]
   				    ,[cp].[DataUltimaAlteracao]
   				    ,[cp].[Ativo]
-					,[lc].[ValorLancamento]										AS [PurchaseValue]
+					,[lc].[ValorParcela]										AS [PurchaseValue]
   				FROM 			[APDBDev].[dbo].[Compras] 		[cp]
 				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
 				WHERE
@@ -1583,6 +1582,7 @@ GO
 -- SET QUOTED_IDENTIFIER ON
 -- GO
 
+
 -- -----------------------------------------------------
 -- Procedure [seg].[UsuariosPaginated]
 -- -----------------------------------------------------
@@ -1607,7 +1607,6 @@ GO
 			-- SET @RowspPage = 5
 			SELECT
 				[T].[UsuarioId]							AS [Identifier]
-				,[T].[GrupoId]							AS [GroupId]
       			,[T].[Login]							AS [UserName]
 				,[T].[GroupName]
       			,[T].[NmrDocumento]
@@ -1635,7 +1634,7 @@ GO
 					[User].[UsuarioId]
 					,[dbo].[FNCReturnIsItemcked]([User].[UsuarioId]) 	AS 	[Blocked]
 					,[gp].[Descricao]									AS  [GroupName]
-					,[User].[GrupoId]
+					,[User].[GrupoUsaruiId]
       				,[User].[Login]
       				,[User].[NmrDocumento]
 					,[User].[NmrTelefone]
@@ -1659,7 +1658,7 @@ GO
 					,[us].[RefreshTokenExpiryTime]
 				FROM [APDBDev].[seg].[Usuarios] [User]
 				INNER JOIN [APDBDev].[seg].[Grupos] [gp]
-				ON			[gp].[GrupoId]		=	[User].[GrupoId]
+				ON			[gp].[GrupoId]		=	[User].[GrupoUsaruiId]
 				LEFT JOIN  [seg].[UserSecurity]		[us]
 				ON			[us].[UserId]		=	[User].[UsuarioId]
 				WHERE 		([User].[UsuarioId]						=		  @Id					OR	@Id 			IS NULL)
@@ -1679,6 +1678,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
 
 -- -----------------------------------------------------
 -- Procedure [seg].[ReturnUsersToSelect]
@@ -2992,7 +2992,6 @@ GO
       			,[bl].[Token]
   			FROM [APDBDev].[seg].[BlackListToken]	[bl]
 			WHERE 		([bl].[BlackListTokenId]					=		  @Id						OR	@Id 					IS NULL)
-			AND 		([bl].[UserId]								=		  @UserId					OR	@UserId					IS NULL)
 			AND 		([bl].[DataInclusao]	BETWEEN	  		@StartDate 	  AND	@EndDate			OR	@StartDate	IS NULL		AND		@EndDate	IS NULL)
 			ORDER BY 	[bl].[DataInclusao] DESC
 			OFFSET ((@PageNumber - 1) * @RowspPage) ROWS
@@ -3061,7 +3060,7 @@ GO
 -- Feed table [seg].[Usuarios]
 -- -----------------------------------------------------
 
-INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
+INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
 VALUES ('9a5f0c64-8103-4ee1-8acd-84b28090d898', 'System', '59647e61-db07-4b43-993d-3f7eda18fe7f', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'System', GETDATE(), 'N', 'N', 'system@appmkt.com.br', '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1),
 ('d2a833de-5bb4-4931-a3c2-133c8994072a', 'Master', 'cb4ba730-222c-4b05-bb56-c2fec255bd9d', '00000000000', 1, '@M45ter', 'Master', GETDATE(), 'N', 'N', 'master@appmkt.com.br', '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1)
 GO
@@ -3263,9 +3262,10 @@ GO
 INSERT INTO APDBDev.dbo.Bloqueios
 (BloqueioId, TipoBloqueioId, NomeBloqueio, Permanente, UsuarioInclusaoId, UsuarioUltimaAlteracaoId, DataInicio, DataFim, DataInclusao, DataUltimaAlteracao, Detalhes, Ativo)
 VALUES
-('b853394f-2034-4e36-9efa-64ffd006770b', 0, 'Bloqueio - Smarth fone galaxy S10 Blocked', '9a5f0c64-8103-4ee1-8acd-84b28090d898', NULL, '2020-01-01', '2025-01-01', GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1),
-('7629714d-ffed-4298-adf5-417c9b703ff6', 0, 'Bloqueio - TESTE BLOQUEIO 2', '9a5f0c64-8103-4ee1-8acd-84b28090d898', NULL, '2020-01-01', '2025-01-01', GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1),
-('d5a8620a-d089-48e3-bc00-8ab227c40b90', 0, 'Bloqueio - Smarth fone galaxy S10 Plus Blocked Permanente', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', NULL, NULL, NULL, GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1);
+('b853394f-2034-4e36-9efa-64ffd006770b', 0, 'Bloqueio - Smarth fone galaxy S10 Blocked', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', NULL, '2020-01-01', '2025-01-01', GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1),
+('7629714d-ffed-4298-adf5-417c9b703ff6', 0, 'Bloqueio - TESTE BLOQUEIO 2', 0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', NULL, '2020-01-01', '2025-01-01', GETDATE(), NULL,'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1),
+('d5a8620a-d089-48e3-bc00-8ab227c40b90', 0, 'Bloqueio - Smarth fone galaxy S10 Plus Blocked Permanente', 1, '9a5f0c64-8103-4ee1-8acd-84b28090d898', NULL, '2020-01-01', NULL, GETDATE(), NULL, 'Bloqueio - Smarth fone galaxy S10 Blocked Detalhes', 1);
+GO
 
 -- ADDING USER TO PRODUCTS
 INSERT INTO APDBDev.dbo.BloqueiosItens
@@ -3306,26 +3306,23 @@ VALUES('4884f1f5-e119-49e6-a394-b3289a2bf539', 1, 'Compra Garantida', 'É um pro
 
 -- ADDING MERCADO PAGO LANCAMENTO TESTE
 INSERT INTO APDBDev.dbo.Lancamentos
-(LancamentoId, TipoLancamento, [Status], Referencia, ValorLancamento, DataBaixa, Observacao, UsuarioIdBaixa, LancamentoIdPai, QtdeParcelas, NmrParcela, ValorParcela, UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('42f442b0-7cc4-4e0c-b693-e594ea3a1728', 2, 9999999, 'Lançamento mercado pago teste', 10.00, GETDATE(), 'Lançamento mercado pago teste', '9a5f0c64-8103-4ee1-8acd-84b28090d898', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 10.0'9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+(LancamentoId, TipoLancamento, [Status], Referencia, DataBaixa, Observacao, UsuarioIdBaixa, LancamentoIdPai, QtdeParcelas, NmrParcela, ValorParcela, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('42f442b0-7cc4-4e0c-b693-e594ea3a1728', 2, 9999999, 'Lançamento mercado pago teste', GETDATE(), 'Lançamento mercado pago teste', '9a5f0c64-8103-4ee1-8acd-84b28090d898', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 10.0, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
 
+-- TODO: VALIDATE IF IT STILL IS VALID
 -- INSERT ENTREGA EM MAOS
 INSERT INTO APDBDev.dbo.Entregas
-(EntregaId, TipoEntrega, [Status], ValorTotal, UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('f5c91ff9-075d-4723-baac-a1cb8e7e41b2', 0, 7, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+(EntregaId, ResponsavelEntregaId, TipoEntrega, Status, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('f5c91ff9-075d-4723-baac-a1cb8e7e41b2', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 0, 7, '86c9efc9-9812-442d-a8b5-8fed62a3f35c', GETDATE(), 0);
 
--- INSERT ENTREGA LOJA MTK PLACE
-INSERT INTO APDBDev.dbo.Entregas
-(EntregaId, TipoEntrega, [Status], ValorTotal, UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('86c9efc9-9812-442d-a8b5-8fed62a3f35c', 6, 7, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
 
--- INSERT ENTREGA EM TERCEIRO
+---- INSERT ENTREGA EM TERCEIRO
 INSERT INTO APDBDev.dbo.Entregas
-(EntregaId, TipoEntrega, [Status], ValorTotal, UsuarioInclusaoId, DataInclusao, Ativo)
-VALUES('48d51e3a-6f27-4916-94b9-e9ad53c9e8bb', 6, 7, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+(EntregaId, ResponsavelEntregaId, TipoEntrega, Status, UsuarioInclusaoId, DataInclusao, Ativo)
+VALUES('48d51e3a-6f27-4916-94b9-e9ad53c9e8bb', '9a5f0c64-8103-4ee1-8acd-84b28090d898', 5, 7, '86c9efc9-9812-442d-a8b5-8fed62a3f35c', GETDATE(), 0);
 
 -- COMPRADOR TESTE
-INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
+INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
 VALUES ('e0d83b70-39f3-4909-ad74-d44208520029', 'purchaser', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000000', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test', GETDATE(), 'N', 'N', 'purchaser@appmkt.com.br', '9a5f0c64-8103-4ee1-8acd-84b28090d898', '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
 
 -- ADDING USER TO ADRESS
@@ -3342,10 +3339,10 @@ VALUES
 
 -- ADDING LANCAMENTO PURCHASE PENDING TEST
 INSERT INTO APDBDev.dbo.Lancamentos
-(LancamentoId, TipoLancamento, [Status], Referencia, ValorLancamento, Observacao, LancamentoIdPai, QtdeParcelas, NmrParcela, ValorParcela, UsuarioInclusaoId, DataInclusao, Ativo)
+(LancamentoId, TipoLancamento, [Status], Referencia, Observacao, LancamentoIdPai, QtdeParcelas, NmrParcela, ValorParcela, UsuarioInclusaoId, DataInclusao, Ativo)
 VALUES
-('9ba6aba5-0d1f-431d-975c-520b56fb383d', 2, 0, 'Release Credit Approved Test', 60.50, 'Release Credit Approved Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 60.5'9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
-('0389e309-5976-486f-aa30-555a4577ccbf', 2, 0, 'Release Credit Pending Test', 3361.98, 'Release Credit Pending Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 3361.98, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
+('9ba6aba5-0d1f-431d-975c-520b56fb383d', 2, 0, 'Release Credit Approved Test', 'Release Credit Approved Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 60.5, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1),
+('0389e309-5976-486f-aa30-555a4577ccbf', 2, 0, 'Release Credit Pending Test', 'Release Credit Pending Test', '42f442b0-7cc4-4e0c-b693-e594ea3a1728', 1, 1, 3361.98, '9a5f0c64-8103-4ee1-8acd-84b28090d898', GETDATE(), 1);
 
 -- INSERT PURCHASE PENDING TEST
 INSERT INTO APDBDev.dbo.Compras
@@ -3365,5 +3362,5 @@ VALUES
 ;
 
 -- COMPRADOR TESTE
-INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
+INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
 VALUES ('e0d83b70-39f3-4909-ad74-d44208520029', 'purchaser2', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000002', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test 2', GETDATE(), 'N', 'N', 'purchaser2@appmkt.com.br', '2BA5FFD6-94EF-41BD-BB6D-08DCB17F6F0D', '2BA5FFD6-94EF-41BD-BB6D-08DCB17F6F0D', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
