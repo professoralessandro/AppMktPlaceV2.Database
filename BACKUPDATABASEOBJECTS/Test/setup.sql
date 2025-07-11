@@ -1297,10 +1297,27 @@ GO
 			-- SET @RowspPage = 5
 
 			SELECT
-				[ShoppingCartId]			AS		Identifier
-      			,[UsuarioId]
-      			,[ProdutoId]
- 			FROM [APDBDev].[dbo].[ShoppingCart]
+				[sc].[ShoppingCartId]				AS		[Identifier]
+      			,[sc].[UsuarioId]
+      			,[sc].[ProdutoId]					AS		[ProductId]
+				,[pd].[TipoProdutoId]				AS		[ProductTypeEnum]
+				,[Img].[File]						AS		[MainImage]
+				,[pd].[Titulo]
+				,[pd].[ResumoDetalhes]
+				,[pd].[Detalhes]
+				,[pd].[CodigoBarras]
+				,[pd].[Marca]
+				,[pd].[Quantidade]
+				,[pd].[PrecoVenda]					AS		[Preco]
+				,[pd].[Score]						AS		[Rating]
+				,[sc].[UsuarioInclusaoId]
+				,[sc].[UsuarioUltimaAlteracaoId]
+				,[sc].[DataInclusao]
+				,[sc].[DataUltimaAlteracao]
+ 			FROM [APDBDev].[dbo].[ShoppingCart] [sc]
+			INNER JOIN [APDBDev].[dbo].[Produtos] [pd]				ON	[pd].[ProdutoId]	=	[sc].[ProdutoId]
+			LEFT JOIN [APDBDev].[dbo].[ImagensProdutos] [PrdImg]	ON [PrdImg].[ProdutoId] =	[sc].[ProdutoId]
+			LEFT JOIN [APDBDev].[dbo].[Imagens] [Img] ON [PrdImg].[ImagemId] = [Img].[ImagemId] AND [Img].[ImagemPrincipal] = 1
 			WHERE [UsuarioId] = @UserId 
 			ORDER BY	1 DESC
 			OFFSET		((@PageNumber - 1) * @RowspPage) ROWS
@@ -1363,8 +1380,10 @@ GO
 	-- CREATED BY ALESSANDRO 08/05/2024
 	-- THIS PROCEDURE RETURNS TABLE COMPRAS PAGINATED
 	CREATE PROCEDURE [dbo].[ReturnPurchasePaginated]
+		@UserAddedId UNIQUEIDENTIFIER,
 		@CompraId UNIQUEIDENTIFIER,
 		@CompradorId UNIQUEIDENTIFIER,
+		@VendedorId UNIQUEIDENTIFIER,
 		@EntregaId UNIQUEIDENTIFIER,
 		@CodigoCompra VARCHAR(30),
 		@Status BIT,
@@ -1382,7 +1401,12 @@ GO
   			    ,[T].[ExternalPurchaseCode]
 				,[T].[ExternalPaymentLink]
   			    ,[T].[Contador]
-  			    ,[T].[CompradorId]
+  			    ,[T].[PurchaseId]
+				,[T].[ProductSellerId]
+				,[T].[ProductId]
+				,[T].[ProductDescription]
+				,[T].[ProductQuantity]
+				,[T].[ProductValue]
   			    ,[T].[PaymentFormType]
   			    ,[T].[StatusPurchase]								
   			    ,[T].[EntregaId]
@@ -1397,16 +1421,21 @@ GO
 				,[T].[PurchaseValue]
 			FROM (
 				SELECT
-	  				[cp].[CompraId]										 		AS [Identifier]
-					,[dbo].[FNCReturnIsItemcked]([CompraId]) 					AS [Blocked]
-  				    ,[cp].[CodigoCompra]										AS [PurchaseCode]
-  				    ,[cp].[CodigoExternoCompra]									AS [ExternalPurchaseCode]
-					,[cp].[LinkExternoPagamento]								AS [ExternalPaymentLink]
+	  				[cp].[CompraId]										 			AS [Identifier]
+					,[dbo].[FNCReturnIsItemcked]([cp].[CompraId]) 					AS [Blocked]
+  				    ,[cp].[CodigoCompra]											AS [PurchaseCode]
+  				    ,[cp].[CodigoExternoCompra]										AS [ExternalPurchaseCode]
+					,[cp].[LinkExternoPagamento]									AS [ExternalPaymentLink]
+  				    ,[cp].[CompradorId]												AS [PurchaseId]
+  				    ,[cp].[FormaPagamento]											AS [PaymentFormType]
+  				    ,[cp].[Status]													AS [StatusPurchase]
+					,[prd].[ProdutoId]												AS [ProductId]
+					,[prd].[VendedorId]												AS [ProductSellerId]
+					,[cmp].[Quantidade]												AS [ProductQuantity]
+					,[prd].[Titulo]													AS [ProductDescription]
+					,[prd].[PrecoVenda]												AS [ProductValue]
+					,[cp].[EntregaId]		
   				    ,[cp].[Contador]
-  				    ,[cp].[CompradorId]
-  				    ,[cp].[FormaPagamento]										AS [PaymentFormType]
-  				    ,[cp].[Status]												AS [StatusPurchase]							
-  				    ,[cp].[EntregaId]
   				    ,[cp].[LancamentoPaiId]
   				    ,[cp].[GarantiaId]
   				    ,[cp].[UsuarioInclusaoId]
@@ -1414,15 +1443,17 @@ GO
   				    ,[cp].[DataInclusao]
   				    ,[cp].[DataUltimaAlteracao]
   				    ,[cp].[Ativo]
-					,[cp].[CompradorId]											AS [PurchaserId]
-					,[lc].[ValorParcela]										AS [PurchaseValue]
+					    ,[cp].[CompradorId]											AS [PurchaserId]
+					    ,[lc].[ValorParcela]										AS [PurchaseValue]
   				FROM 			[APDBDev].[dbo].[Compras] 		[cp]
 				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
 				WHERE 	([cp].[CompraId]					=		  		@CompraId						OR	@CompraId 				IS NULL)
 				AND		([cp].[CompradorId]				=		  		@CompradorId					OR	@CompradorId 			IS NULL)
 				AND		([cp].[EntregaId]				=		  		@EntregaId						OR	@EntregaId 				IS NULL)
-				AND		([cp].[CodigoCompra]				=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([cp].[CodigoCompra]			=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
 				AND		([cp].[CodigoExternoCompra]		=		  		@CodigoCompra					OR	@CodigoCompra 			IS NULL)
+				AND		([prd].[VendedorId] 			= 				@VendedorId 					OR	@VendedorId 			IS NULL)
+				AND		([cp].[UsuarioInclusaoId] 		= 		  		@UserAddedId					OR  [seg].[FNCReturnUsersIsASystemAdmin] (@UserAddedId) = 1 OR @UserAddedId IS NULL)
 				AND		([cp].[Status] 					= 				@Status 						OR	@Status 				IS NULL)
 				AND		([cp].[Ativo] 					= 				@Ativo 							OR	@Ativo 					IS NULL)
 				ORDER BY	1 DESC
