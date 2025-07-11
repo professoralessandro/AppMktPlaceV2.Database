@@ -596,14 +596,14 @@ BEGIN
 		[DataPrevistaEntrega] DATETIME NULL,
 		[DataEfetivaEnrega] DATETIME NULL,
 		[Status] INT NOT NULL,
-		[ValorTotal] DECIMAL(10, 2) NOT NULL,
+		[ValorTotal] DECIMAL(10, 2) NULL,
 		[NmrDocumento] VARCHAR(50) NULL,
 		[CodigoRastramento] VARCHAR(30) NULL,
 		[TipoDocumento] INT NULL,
 		[NomeRecebedor] VARCHAR(100) NULL,
 		[IsEntregueTitular] BIT NULL,
 		[UsuarioInclusaoId] UNIQUEIDENTIFIER NOT NULL,
-		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER,
+		[UsuarioUltimaAlteracaoId] UNIQUEIDENTIFIER NULL,
 		[DataInclusao] [datetime] NOT NULL,
 		[DataUltimaAlteracao] [datetime] NULL,
 		[Ativo] [bit] NOT NULL,
@@ -1247,6 +1247,11 @@ GO
 				FETCH NEXT @RowspPage ROWS ONLY) [T]
 			WHERE [T].[Blocked] = 0;
 		END
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 
 -- -----------------------------------------------------
 -- Procedure [seg].[ReturnUsersIsASystemAdmin]
@@ -1443,10 +1448,12 @@ GO
   				    ,[cp].[DataInclusao]
   				    ,[cp].[DataUltimaAlteracao]
   				    ,[cp].[Ativo]
-					    ,[cp].[CompradorId]											AS [PurchaserId]
-					    ,[lc].[ValorParcela]										AS [PurchaseValue]
-  				FROM 			[APDBDev].[dbo].[Compras] 		[cp]
-				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
+					,[cp].[CompradorId]											AS [PurchaserId]
+					,[lc].[ValorParcela]										AS [PurchaseValue]
+  				FROM			[APDBDev].[dbo].[ComprasProdutos]  	[cmp]
+				INNER JOIN 		[APDBDev].[dbo].[Compras] 	   	   	[cp]			ON [cp].[CompraId] 		= 	[cmp].[CompraId]
+				INNER JOIN 		[APDBDev].[dbo].[Produtos]  	   	[prd]			ON [prd].[ProdutoId]	= 	[cmp].[ProdutoId]
+				INNER JOIN 		[APDBDev].[dbo].[Lancamentos] 	   	[lc]			ON [lc].[LancamentoId] 	= 	[cp].[LancamentoPaiId]
 				WHERE 	([cp].[CompraId]					=		  		@CompraId						OR	@CompraId 				IS NULL)
 				AND		([cp].[CompradorId]				=		  		@CompradorId					OR	@CompradorId 			IS NULL)
 				AND		([cp].[EntregaId]				=		  		@EntregaId						OR	@EntregaId 				IS NULL)
@@ -3394,4 +3401,4 @@ VALUES
 
 -- COMPRADOR TESTE
 INSERT INTO [seg].[Usuarios]([UsuarioId], [Login], [GrupoUsaruiId], [NmrDocumento], [TipoDocumentoId], [Senha], [Nome], [DataNascimento], [Sexo], [EstadoCivil], [Email], [UsuarioInclusaoId], [UsuarioUltimaAlteracaoId], [DataInclusao], [DataUltimaAlteracao], [DataUltimaTrocaSenha], [DataUltimoLogin], [Ativo])
-VALUES ('e0d83b70-39f3-4909-ad74-d44208520029', 'purchaser2', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000002', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test 2', GETDATE(), 'N', 'N', 'purchaser2@appmkt.com.br', '2BA5FFD6-94EF-41BD-BB6D-08DCB17F6F0D', '2BA5FFD6-94EF-41BD-BB6D-08DCB17F6F0D', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
+VALUES ('e0d83b70-39f3-4909-ad74-d44208520020', 'purchaser2', '5877361c-6f05-41f6-a60d-7c7daa0feb64', '00000000002', 1, '$@#$@#$FWSDWERFSSDFSDFF%Dss==', 'Purchaser Test 2', GETDATE(), 'N', 'N', 'purchaser2@appmkt.com.br', '2BA5FFD6-94EF-41BD-BB6D-08DCB17F6F0D', '2BA5FFD6-94EF-41BD-BB6D-08DCB17F6F0D', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 1);
